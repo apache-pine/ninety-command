@@ -112,6 +112,35 @@
 	color: #1a1a1a;
 }
 
+/* Same fallback, extended to the muted/faint text and divider lines inside
+   a code block specifically — --text-muted, --text-faint, and
+   --background-modifier-border can suffer the same scoping issue as
+   --text-normal above. Left untouched everywhere else (e.g. the sidebar
+   panel), since those aren't reported as having the same problem. */
+.theme-dark .ninety-codeblock .ninety-picker-sub,
+.theme-dark .ninety-codeblock .ninety-section-more,
+.theme-dark .ninety-codeblock .ninety-panel-empty,
+.theme-dark .ninety-codeblock .ninety-modal-loading,
+.theme-dark .ninety-codeblock .ninety-badge.is-draft {
+	color: #a8a8a8;
+}
+
+.theme-light .ninety-codeblock .ninety-picker-sub,
+.theme-light .ninety-codeblock .ninety-section-more,
+.theme-light .ninety-codeblock .ninety-panel-empty,
+.theme-light .ninety-codeblock .ninety-modal-loading,
+.theme-light .ninety-codeblock .ninety-badge.is-draft {
+	color: #595959;
+}
+
+.theme-dark .ninety-codeblock .ninety-item {
+	border-bottom-color: #4d4d4d;
+}
+
+.theme-light .ninety-codeblock .ninety-item {
+	border-bottom-color: #cccccc;
+}
+
 .ninety-codeblock-header {
 	display: flex;
 	align-items: center;
