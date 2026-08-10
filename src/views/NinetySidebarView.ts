@@ -46,6 +46,12 @@ export class NinetySidebarView extends ItemView {
 
 		this.addAction("refresh-cw", "Refresh", () => void this.refreshAll());
 
+		// Also a plain, always-visible button — the header action icon above can be
+		// easy to miss (or get crowded out) depending on how the pane is docked.
+		const toolbarEl = contentEl.createDiv({ cls: "ninety-panel-toolbar" });
+		const refreshBtn = toolbarEl.createEl("button", { text: "Refresh" });
+		refreshBtn.addEventListener("click", () => void this.refreshAll());
+
 		this.gateEl = contentEl.createEl("p", { cls: "ninety-panel-empty" });
 		this.sectionsEl = contentEl.createDiv();
 

@@ -24,6 +24,12 @@
 	color: var(--text-muted);
 }
 
+.ninety-panel-toolbar {
+	display: flex;
+	justify-content: flex-end;
+	margin-bottom: 8px;
+}
+
 .ninety-panel-empty {
 	color: var(--text-muted);
 	font-size: var(--font-ui-smaller);
