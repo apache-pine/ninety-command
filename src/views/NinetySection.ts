@@ -13,6 +13,8 @@ export interface NinetySectionOptions<T> {
 	onAddClick: () => void;
 	fetchFn: () => Promise<SectionFetchResult<T>>;
 	renderItem: (item: T, rowEl: HTMLElement) => void;
+	/** Appended after renderItem into a dedicated actions row. Omitted → no buttons rendered. */
+	renderActions?: (item: T, actionsEl: HTMLElement) => void;
 	emptyText: string;
 }
 
@@ -55,6 +57,10 @@ export class NinetySection<T> {
 			for (const item of result.items) {
 				const rowEl = this.listEl.createDiv({ cls: "ninety-item" });
 				this.opts.renderItem(item, rowEl);
+				if (this.opts.renderActions) {
+					const actionsEl = rowEl.createDiv({ cls: "ninety-item-actions" });
+					this.opts.renderActions(item, actionsEl);
+				}
 			}
 
 			if (result.moreAvailable) {

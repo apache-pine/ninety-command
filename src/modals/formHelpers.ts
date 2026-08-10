@@ -43,11 +43,15 @@ export function addTeamDropdown(
 	});
 }
 
-/** Populates an assignee dropdown, defaulting to "unassigned" (the API assigns the caller). */
+/**
+ * Populates an assignee dropdown, defaulting to "unassigned" (the API assigns
+ * the caller) unless `initialUserId` names a currently-active user.
+ */
 export function addUserDropdown(
 	setting: Setting,
 	users: CompanyUserResponseDTO[],
 	onChange: (userId: string) => void,
+	initialUserId?: string,
 ): void {
 	setting.addDropdown((dropdown) => {
 		dropdown.addOption("", "Unassigned (assigned to you)");
@@ -58,7 +62,8 @@ export function addUserDropdown(
 			dropdown.addOption(user.id, label);
 		}
 
-		dropdown.setValue("");
+		const initial = initialUserId && users.some((u) => u.id === initialUserId) ? initialUserId : "";
+		dropdown.setValue(initial);
 		dropdown.onChange(onChange);
 	});
 }

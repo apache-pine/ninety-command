@@ -31,6 +31,7 @@ export class NinetySettingTab extends PluginSettingTab {
 		this.renderDefaultTeamSetting(containerEl);
 		this.renderAutoRefreshSetting(containerEl);
 		this.renderCacheSetting(containerEl);
+		this.renderNinetyLink(containerEl);
 	}
 
 	private renderTokenSetting(containerEl: HTMLElement): void {
@@ -206,5 +207,14 @@ export class NinetySettingTab extends PluginSettingTab {
 						}
 					});
 			});
+	}
+
+	private renderNinetyLink(containerEl: HTMLElement): void {
+		const p = containerEl.createEl("p", { cls: "ninety-picker-sub" });
+		p.createEl("a", {
+			text: "Open app.ninety.io ↗",
+			href: "https://app.ninety.io",
+			attr: { target: "_blank", rel: "noopener" },
+		});
 	}
 }

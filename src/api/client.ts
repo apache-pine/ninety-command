@@ -3,6 +3,7 @@ import { NinetyApiError } from "./errors";
 import { createIssuesResource, type IssuesResource } from "./resources/issues";
 import { createMilestonesResource, type MilestonesResource } from "./resources/milestones";
 import { createRocksResource, type RocksResource } from "./resources/rocks";
+import { createScorecardResource, type ScorecardResource } from "./resources/scorecard";
 import { createTeamsResource, type TeamsResource } from "./resources/teams";
 import { createTodosResource, type TodosResource } from "./resources/todos";
 import { createUsersResource, type UsersResource } from "./resources/users";
@@ -33,6 +34,7 @@ export class NinetyApiClient {
 	readonly milestones: MilestonesResource;
 	readonly teams: TeamsResource;
 	readonly users: UsersResource;
+	readonly scorecard: ScorecardResource;
 
 	constructor(private readonly getToken: () => string) {
 		this.issues = createIssuesResource(this);
@@ -41,6 +43,7 @@ export class NinetyApiClient {
 		this.milestones = createMilestonesResource(this);
 		this.teams = createTeamsResource(this);
 		this.users = createUsersResource(this);
+		this.scorecard = createScorecardResource(this);
 	}
 
 	async request<TResponse>(opts: NinetyRequestOptions): Promise<TResponse> {

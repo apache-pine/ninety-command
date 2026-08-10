@@ -1,12 +1,16 @@
 import { type App, Modal, Notice, Setting } from "obsidian";
 import { describeApiError, NinetyApiError } from "../api/errors";
+import type { RockResponseDTO } from "../api/resources/rocks";
 import type { AvailableTeamResponseDTO } from "../api/resources/teams";
 import type { RockLevelCode, RockQuarter, RockStatusCode } from "../api/types";
-import { ensureTeamsCache } from "../cache";
+import type { CompanyUserResponseDTO } from "../api/resources/users";
+import { ensureTeamsCache, ensureUsersCache } from "../cache";
 import type NinetyPlugin from "../main";
 import { dateInputToEndOfDayUtcIso, getCalendarQuarter } from "../utils/dates";
 import type { CapturePrefill } from "../utils/prefill";
-import { addDateField, addTeamDropdown, runSubmit } from "./formHelpers";
+import { addDateField, addTeamDropdown, addUserDropdown, runSubmit } from "./formHelpers";
+
+export type RockModalMode = { mode: "create"; prefill: CapturePrefill } | { mode: "edit"; rock: RockResponseDTO };
 
 const STATUS_OPTIONS: { value: RockStatusCode; label: string }[] = [
 	{ value: "ON_TRACK", label: "On track" },
@@ -25,43 +29,71 @@ const LEVEL_OPTIONS: { value: RockLevelCode; label: string }[] = [
 
 const QUARTER_OPTIONS: RockQuarter[] = ["Q1", "Q2", "Q3", "Q4", "None"];
 
+function toDateInputValue(dueDate: string): string {
+	return dueDate.slice(0, 10);
+}
+
 export class CreateRockModal extends Modal {
 	private title: string;
 	private description: string;
-	private teamId = "";
-	private dueDate = "";
-	private statusCode: RockStatusCode = "ON_TRACK";
-	private levelCode: RockLevelCode = "USER";
-	private quarter: RockQuarter = getCalendarQuarter();
+	private teamId: string;
+	private dueDate: string;
+	private statusCode: RockStatusCode;
+	private levelCode: RockLevelCode;
+	private quarter: RockQuarter;
+	private userId = "";
 
 	constructor(
 		app: App,
 		private plugin: NinetyPlugin,
-		prefill: CapturePrefill,
-		private onCreated?: () => void,
+		private modeOpts: RockModalMode,
+		private onSaved?: () => void,
 	) {
 		super(app);
-		this.title = prefill.title;
-		this.description = prefill.description;
+		if (modeOpts.mode === "create") {
+			this.title = modeOpts.prefill.title;
+			this.description = modeOpts.prefill.description;
+			this.teamId = "";
+			this.dueDate = "";
+			this.statusCode = "ON_TRACK";
+			this.levelCode = "USER";
+			this.quarter = getCalendarQuarter();
+		} else {
+			this.title = modeOpts.rock.title;
+			this.description = modeOpts.rock.description ?? "";
+			this.teamId = modeOpts.rock.teamId;
+			this.dueDate = toDateInputValue(modeOpts.rock.dueDate);
+			this.statusCode = modeOpts.rock.statusCode;
+			this.levelCode = modeOpts.rock.levelCode;
+			this.quarter = modeOpts.rock.quarter;
+			this.userId = modeOpts.rock.userId;
+		}
 	}
 
 	async onOpen(): Promise<void> {
 		const { contentEl } = this;
-		contentEl.createEl("h2", { text: "Create Ninety Rock" });
+		const isEdit = this.modeOpts.mode === "edit";
+		contentEl.createEl("h2", { text: isEdit ? "Edit Ninety Rock" : "Create Ninety Rock" });
 		const loadingEl = contentEl.createEl("p", { text: "Loading teams…", cls: "ninety-modal-loading" });
 
 		try {
-			const teams = await ensureTeamsCache(this.plugin);
+			// Only edit mode shows an Owner dropdown (create derives the owner from the
+			// JWT), so only edit mode needs the users cache warmed.
+			const [teams, users] = await Promise.all([
+				ensureTeamsCache(this.plugin),
+				isEdit ? ensureUsersCache(this.plugin) : Promise.resolve(this.plugin.settings.usersCache),
+			]);
 			loadingEl.remove();
-			this.renderForm(teams);
+			this.renderForm(teams, users);
 		} catch (err) {
 			const message = err instanceof NinetyApiError ? describeApiError(err) : "Ninety.io: failed to load teams.";
 			loadingEl.setText(message);
 		}
 	}
 
-	private renderForm(teams: AvailableTeamResponseDTO[]): void {
+	private renderForm(teams: AvailableTeamResponseDTO[], users: CompanyUserResponseDTO[]): void {
 		const { contentEl } = this;
+		const isEdit = this.modeOpts.mode === "edit";
 
 		new Setting(contentEl).setName("Title").addText((text) =>
 			text.setValue(this.title).onChange((value) => {
@@ -78,7 +110,7 @@ export class CreateRockModal extends Modal {
 		addTeamDropdown(
 			new Setting(contentEl).setName("Team"),
 			teams,
-			{ defaultTeamId: this.plugin.settings.defaultTeamId },
+			{ defaultTeamId: isEdit ? this.teamId : this.plugin.settings.defaultTeamId },
 			(teamId) => {
 				this.teamId = teamId;
 			},
@@ -112,9 +144,22 @@ export class CreateRockModal extends Modal {
 				});
 			});
 
+		// Only meaningful in edit mode — on create, the owner is always the
+		// authenticated user, derived server-side from the JWT.
+		if (isEdit) {
+			addUserDropdown(
+				new Setting(contentEl).setName("Owner"),
+				users,
+				(userId) => {
+					this.userId = userId;
+				},
+				this.userId,
+			);
+		}
+
 		new Setting(contentEl).addButton((btn) => {
 			btn
-				.setButtonText("Create Rock")
+				.setButtonText(isEdit ? "Save Changes" : "Create Rock")
 				.setCta()
 				.onClick(() => {
 					if (!this.title.trim()) {
@@ -130,7 +175,24 @@ export class CreateRockModal extends Modal {
 						return;
 					}
 
-					void runSubmit(btn, "Creating…", async () => {
+					void runSubmit(btn, isEdit ? "Saving…" : "Creating…", async () => {
+						if (this.modeOpts.mode === "edit") {
+							const updated = await this.plugin.apiClient.rocks.update(this.modeOpts.rock._id, {
+								title: this.title.trim(),
+								teamId: this.teamId,
+								dueDate: dateInputToEndOfDayUtcIso(this.dueDate),
+								statusCode: this.statusCode,
+								levelCode: this.levelCode,
+								quarter: this.quarter,
+								description: this.description || undefined,
+								userId: this.userId || undefined,
+							});
+							new Notice(`Ninety.io: Rock "${updated.title}" updated.`);
+							this.onSaved?.();
+							this.close();
+							return;
+						}
+
 						const created = await this.plugin.apiClient.rocks.create({
 							rock: {
 								teamId: this.teamId,
@@ -152,7 +214,7 @@ export class CreateRockModal extends Modal {
 						}
 
 						new Notice(`Ninety.io: Rock "${rock.title}" created.`);
-						this.onCreated?.();
+						this.onSaved?.();
 						this.close();
 					});
 				});

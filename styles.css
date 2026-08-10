@@ -173,3 +173,21 @@
 .ninety-button:hover {
 	background-color: var(--interactive-hover);
 }
+
+.ninety-item-actions {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	margin-top: 4px;
+}
+
+.ninety-scorecard-group-header {
+	font-weight: var(--font-semibold);
+	font-size: var(--font-ui-small);
+	margin-top: 12px;
+	margin-bottom: 4px;
+}
+
+.ninety-scorecard-group-header:first-child {
+	margin-top: 0;
+}

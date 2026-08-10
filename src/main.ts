@@ -65,7 +65,7 @@ export default class NinetyPlugin extends Plugin {
 			name: "Create Issue",
 			callback: () => {
 				if (!this.requireToken()) return;
-				new CreateIssueModal(this.app, this, getPrefillFromSelection(this.app)).open();
+				new CreateIssueModal(this.app, this, { mode: "create", prefill: getPrefillFromSelection(this.app) }).open();
 			},
 		});
 
@@ -74,7 +74,7 @@ export default class NinetyPlugin extends Plugin {
 			name: "Create To-Do",
 			callback: () => {
 				if (!this.requireToken()) return;
-				new CreateTodoModal(this.app, this, getPrefillFromSelection(this.app)).open();
+				new CreateTodoModal(this.app, this, { mode: "create", prefill: getPrefillFromSelection(this.app) }).open();
 			},
 		});
 
@@ -83,7 +83,7 @@ export default class NinetyPlugin extends Plugin {
 			name: "Create Rock",
 			callback: () => {
 				if (!this.requireToken()) return;
-				new CreateRockModal(this.app, this, getPrefillFromSelection(this.app)).open();
+				new CreateRockModal(this.app, this, { mode: "create", prefill: getPrefillFromSelection(this.app) }).open();
 			},
 		});
 

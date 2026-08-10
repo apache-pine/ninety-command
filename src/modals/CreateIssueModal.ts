@@ -1,12 +1,16 @@
 import { type App, Modal, Notice, Setting } from "obsidian";
 import { describeApiError, NinetyApiError } from "../api/errors";
+import type { IssueResponseDTO } from "../api/resources/issues";
 import type { AvailableTeamResponseDTO } from "../api/resources/teams";
 import type { IssueInterval } from "../api/types";
 import type { CompanyUserResponseDTO } from "../api/resources/users";
 import { ensureTeamsCache, ensureUsersCache } from "../cache";
 import type NinetyPlugin from "../main";
+import { htmlDescriptionToEditable } from "../utils/html";
 import type { CapturePrefill } from "../utils/prefill";
 import { addTeamDropdown, addUserDropdown, runSubmit } from "./formHelpers";
+
+export type IssueModalMode = { mode: "create"; prefill: CapturePrefill } | { mode: "edit"; issue: IssueResponseDTO };
 
 export class CreateIssueModal extends Modal {
 	private title: string;
@@ -19,17 +23,26 @@ export class CreateIssueModal extends Modal {
 	constructor(
 		app: App,
 		private plugin: NinetyPlugin,
-		prefill: CapturePrefill,
-		private onCreated?: () => void,
+		private modeOpts: IssueModalMode,
+		private onSaved?: () => void,
 	) {
 		super(app);
-		this.title = prefill.title;
-		this.description = prefill.description;
+		if (modeOpts.mode === "create") {
+			this.title = modeOpts.prefill.title;
+			this.description = modeOpts.prefill.description;
+		} else {
+			this.title = modeOpts.issue.title;
+			this.description = htmlDescriptionToEditable(modeOpts.issue.description);
+			this.interval = modeOpts.issue.intervalCode;
+			this.priority = modeOpts.issue.priority ?? 0;
+			this.teamId = modeOpts.issue.teamId;
+		}
 	}
 
 	async onOpen(): Promise<void> {
 		const { contentEl } = this;
-		contentEl.createEl("h2", { text: "Create Ninety Issue" });
+		const isEdit = this.modeOpts.mode === "edit";
+		contentEl.createEl("h2", { text: isEdit ? "Edit Ninety Issue" : "Create Ninety Issue" });
 		const loadingEl = contentEl.createEl("p", { text: "Loading teams…", cls: "ninety-modal-loading" });
 
 		try {
@@ -45,6 +58,7 @@ export class CreateIssueModal extends Modal {
 
 	private renderForm(teams: AvailableTeamResponseDTO[], users: CompanyUserResponseDTO[]): void {
 		const { contentEl } = this;
+		const isEdit = this.modeOpts.mode === "edit";
 
 		new Setting(contentEl).setName("Title").addText((text) =>
 			text.setValue(this.title).onChange((value) => {
@@ -52,7 +66,11 @@ export class CreateIssueModal extends Modal {
 			}),
 		);
 
-		new Setting(contentEl).setName("Description").addTextArea((text) =>
+		const descSetting = new Setting(contentEl).setName("Description");
+		if (isEdit) {
+			descSetting.setDesc("Shown as-is; complex formatting from ninety.io may not display cleanly here.");
+		}
+		descSetting.addTextArea((text) =>
 			text.setValue(this.description).onChange((value) => {
 				this.description = value;
 			}),
@@ -80,19 +98,23 @@ export class CreateIssueModal extends Modal {
 		addTeamDropdown(
 			new Setting(contentEl).setName("Team"),
 			teams,
-			{ defaultTeamId: this.plugin.settings.defaultTeamId },
+			{ defaultTeamId: isEdit ? this.teamId : this.plugin.settings.defaultTeamId },
 			(teamId) => {
 				this.teamId = teamId;
 			},
 		);
 
-		addUserDropdown(new Setting(contentEl).setName("Assignee"), users, (userId) => {
-			this.userId = userId;
-		});
+		// The API gives no way to reassign an Issue's owner via update — Assignee
+		// only makes sense at creation time.
+		if (!isEdit) {
+			addUserDropdown(new Setting(contentEl).setName("Assignee"), users, (userId) => {
+				this.userId = userId;
+			});
+		}
 
 		new Setting(contentEl).addButton((btn) => {
 			btn
-				.setButtonText("Create Issue")
+				.setButtonText(isEdit ? "Save Changes" : "Create Issue")
 				.setCta()
 				.onClick(() => {
 					if (!this.title.trim()) {
@@ -104,17 +126,30 @@ export class CreateIssueModal extends Modal {
 						return;
 					}
 
-					void runSubmit(btn, "Creating…", async () => {
-						const created = await this.plugin.apiClient.issues.create({
-							title: this.title.trim(),
-							teamId: this.teamId,
-							interval: this.interval,
-							description: this.description ? this.description.split("\n").join("<br>\n") : undefined,
-							priority: this.priority,
-							userId: this.userId || undefined,
-						});
-						new Notice(`Ninety.io: Issue "${created.title}" created.`);
-						this.onCreated?.();
+					void runSubmit(btn, isEdit ? "Saving…" : "Creating…", async () => {
+						const description = this.description ? this.description.split("\n").join("<br>\n") : undefined;
+
+						if (this.modeOpts.mode === "edit") {
+							const updated = await this.plugin.apiClient.issues.update(this.modeOpts.issue.id, {
+								title: this.title.trim(),
+								teamId: this.teamId,
+								interval: this.interval,
+								description,
+								priority: this.priority,
+							});
+							new Notice(`Ninety.io: Issue "${updated.title}" updated.`);
+						} else {
+							const created = await this.plugin.apiClient.issues.create({
+								title: this.title.trim(),
+								teamId: this.teamId,
+								interval: this.interval,
+								description,
+								priority: this.priority,
+								userId: this.userId || undefined,
+							});
+							new Notice(`Ninety.io: Issue "${created.title}" created.`);
+						}
+						this.onSaved?.();
 						this.close();
 					});
 				});
