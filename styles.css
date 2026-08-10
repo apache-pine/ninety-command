@@ -62,7 +62,9 @@
 .ninety-item-title {
 	font-size: var(--font-ui-small);
 	font-weight: 500;
-	color: var(--text-normal);
+	/* Inherits color from its container (.ninety-codeblock or the sidebar
+	   pane) rather than setting its own, so the dark/light overrides below
+	   apply consistently without being overridden themselves. */
 }
 
 .ninety-section-more {
@@ -95,6 +97,19 @@
 	border-radius: var(--radius-m);
 	background-color: var(--background-secondary);
 	color: var(--text-normal);
+}
+
+/* Some themes scope --text-normal to the note's own (often light) reading
+   background and don't re-pair it against boxed elements like this one, so
+   inheriting it here can land dark-on-dark. Obsidian's own theme-dark/
+   theme-light body classes are a more reliable signal than any individual
+   theme's custom properties, so use them as a legibility safety net. */
+.theme-dark .ninety-codeblock {
+	color: #e3e3e3;
+}
+
+.theme-light .ninety-codeblock {
+	color: #1a1a1a;
 }
 
 .ninety-codeblock-header {
