@@ -1,5 +1,6 @@
 import { type App, Notice, PluginSettingTab, Setting } from "obsidian";
 import { describeApiError, NinetyApiError } from "./api/errors";
+import { fetchAndCacheAll, fetchAndCacheTeams } from "./cache";
 import type NinetyPlugin from "./main";
 
 type ConnectionStatus =
@@ -91,10 +92,7 @@ export class NinetySettingTab extends PluginSettingTab {
 
 					try {
 						await this.plugin.apiClient.teams.list();
-						const availableTeams = await this.plugin.apiClient.teams.available();
-
-						this.plugin.settings.teamsCache = availableTeams;
-						await this.plugin.saveSettings();
+						await fetchAndCacheTeams(this.plugin);
 
 						this.connectionStatus = { state: "success" };
 						new Notice("Ninety.io: connection successful.");
@@ -167,16 +165,7 @@ export class NinetySettingTab extends PluginSettingTab {
 						this.display();
 
 						try {
-							const [, availableTeams, users] = await Promise.all([
-								this.plugin.apiClient.teams.list(),
-								this.plugin.apiClient.teams.available(),
-								this.plugin.apiClient.users.listForCompany(),
-							]);
-
-							this.plugin.settings.teamsCache = availableTeams;
-							this.plugin.settings.usersCache = users;
-							this.plugin.settings.cacheLastUpdated = new Date().toISOString();
-							await this.plugin.saveSettings();
+							await Promise.all([this.plugin.apiClient.teams.list(), fetchAndCacheAll(this.plugin)]);
 
 							new Notice("Ninety.io: cached data refreshed.");
 						} catch (err) {

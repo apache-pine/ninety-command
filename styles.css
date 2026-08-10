@@ -14,3 +14,12 @@
 .ninety-connection-status.is-pending {
 	color: var(--text-muted);
 }
+
+.ninety-modal-loading {
+	color: var(--text-muted);
+}
+
+.ninety-picker-sub {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+}
