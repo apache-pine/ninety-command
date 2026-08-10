@@ -38,6 +38,7 @@ export class CreateRockModal extends Modal {
 		app: App,
 		private plugin: NinetyPlugin,
 		prefill: CapturePrefill,
+		private onCreated?: () => void,
 	) {
 		super(app);
 		this.title = prefill.title;
@@ -151,6 +152,7 @@ export class CreateRockModal extends Modal {
 						}
 
 						new Notice(`Ninety.io: Rock "${rock.title}" created.`);
+						this.onCreated?.();
 						this.close();
 					});
 				});

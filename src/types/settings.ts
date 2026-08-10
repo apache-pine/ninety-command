@@ -11,6 +11,8 @@ export interface NinetySettings {
 	usersCache: CompanyUserResponseDTO[];
 	/** ISO timestamp of the last successful cache refresh, or null if never refreshed. */
 	cacheLastUpdated: string | null;
+	/** Minutes between automatic sidebar-panel refreshes; 0 disables auto-refresh. */
+	autoRefreshMinutes: number;
 }
 
 export const DEFAULT_SETTINGS: NinetySettings = {
@@ -20,4 +22,5 @@ export const DEFAULT_SETTINGS: NinetySettings = {
 	teamsCache: [],
 	usersCache: [],
 	cacheLastUpdated: null,
+	autoRefreshMinutes: 0,
 };

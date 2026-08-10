@@ -10,10 +10,12 @@ import { RockPickerModal } from "./modals/RockPickerModal";
 import { NinetySettingTab } from "./settings";
 import { DEFAULT_SETTINGS, type NinetySettings } from "./types/settings";
 import { getPrefillFromSelection } from "./utils/prefill";
+import { NINETY_VIEW_TYPE, NinetySidebarView } from "./views/NinetySidebarView";
 
 export default class NinetyPlugin extends Plugin {
 	settings!: NinetySettings;
 	apiClient!: NinetyApiClient;
+	private autoRefreshIntervalId: number | null = null;
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
@@ -22,10 +24,24 @@ export default class NinetyPlugin extends Plugin {
 
 		this.addSettingTab(new NinetySettingTab(this.app, this));
 		this.registerCommands();
+
+		this.registerView(NINETY_VIEW_TYPE, (leaf) => new NinetySidebarView(leaf, this));
+		this.addRibbonIcon("layout-list", "Open Ninety.io panel", () => {
+			void this.activateView();
+		});
+		this.addCommand({
+			id: "open-ninety-panel",
+			name: "Open Ninety.io panel",
+			callback: () => {
+				void this.activateView();
+			},
+		});
+
+		this.restartAutoRefresh();
 	}
 
 	onunload(): void {
-		// Nothing to clean up yet — no intervals, views, or listeners registered this phase.
+		this.app.workspace.detachLeavesOfType(NINETY_VIEW_TYPE);
 	}
 
 	async loadSettings(): Promise<void> {
@@ -72,6 +88,50 @@ export default class NinetyPlugin extends Plugin {
 				void this.openRockPickerForMilestone();
 			},
 		});
+	}
+
+	/** Reuses an existing panel leaf if one's already open, rather than creating duplicates. */
+	async activateView(): Promise<void> {
+		const existing = this.app.workspace.getLeavesOfType(NINETY_VIEW_TYPE);
+		if (existing.length > 0) {
+			await this.app.workspace.revealLeaf(existing[0]);
+			return;
+		}
+
+		const leaf = this.app.workspace.getRightLeaf(false);
+		if (!leaf) {
+			new Notice("Ninety.io: couldn't open the panel — no sidebar space available.");
+			return;
+		}
+
+		await leaf.setViewState({ type: NINETY_VIEW_TYPE, active: true });
+		await this.app.workspace.revealLeaf(leaf);
+	}
+
+	/** Called on load and whenever the auto-refresh setting changes, so it takes effect immediately. */
+	restartAutoRefresh(): void {
+		if (this.autoRefreshIntervalId !== null) {
+			window.clearInterval(this.autoRefreshIntervalId);
+			this.autoRefreshIntervalId = null;
+		}
+
+		if (this.settings.autoRefreshMinutes <= 0) {
+			return;
+		}
+
+		const intervalId = window.setInterval(
+			() => this.refreshOpenPanels(),
+			this.settings.autoRefreshMinutes * 60_000,
+		);
+		this.autoRefreshIntervalId = this.registerInterval(intervalId);
+	}
+
+	private refreshOpenPanels(): void {
+		for (const leaf of this.app.workspace.getLeavesOfType(NINETY_VIEW_TYPE)) {
+			if (leaf.view instanceof NinetySidebarView) {
+				void leaf.view.refreshAll();
+			}
+		}
 	}
 
 	private requireToken(): boolean {

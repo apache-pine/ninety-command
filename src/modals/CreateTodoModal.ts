@@ -19,6 +19,7 @@ export class CreateTodoModal extends Modal {
 		app: App,
 		private plugin: NinetyPlugin,
 		prefill: CapturePrefill,
+		private onCreated?: () => void,
 	) {
 		super(app);
 		this.title = prefill.title;
@@ -101,6 +102,7 @@ export class CreateTodoModal extends Modal {
 							userId: this.userId || undefined,
 						});
 						new Notice(`Ninety.io: To-Do "${created.title}" created.`);
+						this.onCreated?.();
 						this.close();
 					});
 				});

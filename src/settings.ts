@@ -29,6 +29,7 @@ export class NinetySettingTab extends PluginSettingTab {
 		this.renderConnectionStatusEl(containerEl);
 		this.renderTestConnectionSetting(containerEl);
 		this.renderDefaultTeamSetting(containerEl);
+		this.renderAutoRefreshSetting(containerEl);
 		this.renderCacheSetting(containerEl);
 	}
 
@@ -141,6 +142,31 @@ export class NinetySettingTab extends PluginSettingTab {
 					this.plugin.settings.defaultTeamId = selected ? selected._id : null;
 					this.plugin.settings.defaultTeamName = selected ? selected.name : null;
 					await this.plugin.saveSettings();
+				});
+			});
+	}
+
+	private renderAutoRefreshSetting(containerEl: HTMLElement): void {
+		const options: [string, string][] = [
+			["0", "Off"],
+			["5", "Every 5 minutes"],
+			["15", "Every 15 minutes"],
+			["30", "Every 30 minutes"],
+			["60", "Every hour"],
+		];
+
+		new Setting(containerEl)
+			.setName("Auto-refresh panel")
+			.setDesc("Automatically refresh the Ninety.io sidebar panel while it's open.")
+			.addDropdown((dropdown) => {
+				for (const [value, label] of options) {
+					dropdown.addOption(value, label);
+				}
+				dropdown.setValue(String(this.plugin.settings.autoRefreshMinutes));
+				dropdown.onChange(async (value) => {
+					this.plugin.settings.autoRefreshMinutes = Number(value);
+					await this.plugin.saveSettings();
+					this.plugin.restartAutoRefresh();
 				});
 			});
 	}

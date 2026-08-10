@@ -23,3 +23,59 @@
 	font-size: var(--font-ui-smaller);
 	color: var(--text-muted);
 }
+
+.ninety-panel-empty {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	padding: 4px 0;
+}
+
+.ninety-section {
+	margin-bottom: 16px;
+}
+
+.ninety-section-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	font-weight: var(--font-semibold);
+	margin-bottom: 4px;
+}
+
+.ninety-section-list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.ninety-item {
+	padding: 4px 0;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.ninety-item-title {
+	font-size: var(--font-ui-small);
+}
+
+.ninety-section-more {
+	color: var(--text-faint);
+	font-size: var(--font-ui-smaller);
+	margin-top: 4px;
+}
+
+.ninety-badge {
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-semibold);
+}
+
+.ninety-badge.is-on-track {
+	color: var(--text-success);
+}
+
+.ninety-badge.is-off-track {
+	color: var(--text-error);
+}
+
+.ninety-badge.is-draft {
+	color: var(--text-muted);
+}

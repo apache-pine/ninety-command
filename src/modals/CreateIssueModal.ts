@@ -20,6 +20,7 @@ export class CreateIssueModal extends Modal {
 		app: App,
 		private plugin: NinetyPlugin,
 		prefill: CapturePrefill,
+		private onCreated?: () => void,
 	) {
 		super(app);
 		this.title = prefill.title;
@@ -113,6 +114,7 @@ export class CreateIssueModal extends Modal {
 							userId: this.userId || undefined,
 						});
 						new Notice(`Ninety.io: Issue "${created.title}" created.`);
+						this.onCreated?.();
 						this.close();
 					});
 				});
