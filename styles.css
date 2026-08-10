@@ -85,3 +85,15 @@
 .ninety-badge.is-draft {
 	color: var(--text-muted);
 }
+
+.ninety-codeblock {
+	margin: 8px 0;
+	padding: 8px 12px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+}
+
+.ninety-codeblock-title {
+	font-weight: var(--font-semibold);
+	margin-bottom: 4px;
+}

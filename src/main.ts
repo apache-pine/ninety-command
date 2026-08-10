@@ -2,6 +2,9 @@ import { Notice, Plugin } from "obsidian";
 import { NinetyApiClient } from "./api/client";
 import { describeApiError, NinetyApiError } from "./api/errors";
 import { ensureTeamsCache } from "./cache";
+import { registerIssuesCodeBlock } from "./codeBlocks/issuesBlock";
+import { registerRocksCodeBlock } from "./codeBlocks/rocksBlock";
+import { registerTodosCodeBlock } from "./codeBlocks/todosBlock";
 import { CreateIssueModal } from "./modals/CreateIssueModal";
 import { CreateMilestoneModal } from "./modals/CreateMilestoneModal";
 import { CreateRockModal } from "./modals/CreateRockModal";
@@ -36,6 +39,10 @@ export default class NinetyPlugin extends Plugin {
 				void this.activateView();
 			},
 		});
+
+		registerIssuesCodeBlock(this);
+		registerTodosCodeBlock(this);
+		registerRocksCodeBlock(this);
 
 		this.restartAutoRefresh();
 	}

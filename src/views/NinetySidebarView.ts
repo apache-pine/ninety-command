@@ -6,12 +6,12 @@ import type NinetyPlugin from "../main";
 import { CreateIssueModal } from "../modals/CreateIssueModal";
 import { CreateRockModal } from "../modals/CreateRockModal";
 import { CreateTodoModal } from "../modals/CreateTodoModal";
+import { queryActiveRocks, queryOpenIssues, queryOpenTodos } from "../queries";
+import { renderIssueRow, renderRockRow, renderTodoRow } from "../rendering";
 import { getPrefillFromSelection } from "../utils/prefill";
-import { NinetySection, type SectionFetchResult } from "./NinetySection";
+import { NinetySection } from "./NinetySection";
 
 export const NINETY_VIEW_TYPE = "ninety-io-panel";
-
-const SECTION_DISPLAY_LIMIT = 10;
 
 export class NinetySidebarView extends ItemView {
 	private gateEl!: HTMLElement;
@@ -60,8 +60,8 @@ export class NinetySidebarView extends ItemView {
 			title: "Issues",
 			addButtonLabel: "Create Issue",
 			onAddClick: () => this.openCreateIssue(),
-			fetchFn: () => this.fetchIssues(),
-			renderItem: (issue, rowEl) => this.renderIssueRow(issue, rowEl),
+			fetchFn: () => this.withDefaultTeam((teamId) => queryOpenIssues(this.plugin.apiClient, teamId)),
+			renderItem: renderIssueRow,
 			emptyText: "No open Issues.",
 		});
 
@@ -70,8 +70,8 @@ export class NinetySidebarView extends ItemView {
 			title: "To-Dos",
 			addButtonLabel: "Create To-Do",
 			onAddClick: () => this.openCreateTodo(),
-			fetchFn: () => this.fetchTodos(),
-			renderItem: (todo, rowEl) => this.renderTodoRow(todo, rowEl),
+			fetchFn: () => this.withDefaultTeam((teamId) => queryOpenTodos(this.plugin.apiClient, teamId)),
+			renderItem: renderTodoRow,
 			emptyText: "No open To-Dos.",
 		});
 
@@ -80,8 +80,8 @@ export class NinetySidebarView extends ItemView {
 			title: "Rocks",
 			addButtonLabel: "Create Rock",
 			onAddClick: () => this.openCreateRock(),
-			fetchFn: () => this.fetchRocks(),
-			renderItem: (rock, rowEl) => this.renderRockRow(rock, rowEl),
+			fetchFn: () => this.withDefaultTeam((teamId) => queryActiveRocks(this.plugin.apiClient, teamId)),
+			renderItem: renderRockRow,
 			emptyText: "No active Rocks.",
 		});
 
@@ -113,88 +113,12 @@ export class NinetySidebarView extends ItemView {
 		await Promise.all([this.issuesSection.refresh(), this.todosSection.refresh(), this.rocksSection.refresh()]);
 	}
 
-	private async fetchIssues(): Promise<SectionFetchResult<IssueResponseDTO>> {
+	/** refreshAll() already gates on defaultTeamId before calling section.refresh(); this is defense-in-depth. */
+	private withDefaultTeam<T>(
+		fetch: (teamId: string) => Promise<{ items: T[]; moreAvailable: boolean }>,
+	): Promise<{ items: T[]; moreAvailable: boolean }> {
 		const teamId = this.plugin.settings.defaultTeamId;
-		if (!teamId) return { items: [], moreAvailable: false };
-
-		const page = await this.plugin.apiClient.issues.query({
-			teamId,
-			sortField: "createdDate",
-			sortDirection: "DESC",
-			pageSize: 50,
-		});
-
-		// No server-side completed/archived filter on this endpoint — filter client-side.
-		const open = page.items.filter((issue) => !issue.completed && !issue.archived);
-		return {
-			items: open.slice(0, SECTION_DISPLAY_LIMIT),
-			// Heuristic, not exact: filtering happens after a single raw page, so a team
-			// with many closed Issues could have open ones this page never surfaces.
-			moreAvailable: open.length > SECTION_DISPLAY_LIMIT || page.totalCount > page.items.length,
-		};
-	}
-
-	private async fetchTodos(): Promise<SectionFetchResult<TodoResponseDTO>> {
-		const teamId = this.plugin.settings.defaultTeamId;
-		if (!teamId) return { items: [], moreAvailable: false };
-
-		const page = await this.plugin.apiClient.todos.queryPaged({
-			teamId,
-			completed: false,
-			archived: false,
-			sort: "dueDate",
-			order: "asc",
-			page: 1,
-			pageSize: SECTION_DISPLAY_LIMIT,
-		});
-
-		return { items: page.items, moreAvailable: page.totalCount > page.items.length };
-	}
-
-	private async fetchRocks(): Promise<SectionFetchResult<RockResponseDTO>> {
-		const teamId = this.plugin.settings.defaultTeamId;
-		if (!teamId) return { items: [], moreAvailable: false };
-
-		const page = await this.plugin.apiClient.rocks.queryPaged({
-			teamId,
-			archived: false,
-			pageSize: 50,
-			sortField: "dueDate",
-			sortDirection: "ASC",
-		});
-
-		// No "not completed" filter on this endpoint — filter client-side by status.
-		const active = page.items.filter((rock) => rock.statusCode !== "DONE" && rock.statusCode !== "CANCELED");
-		return {
-			items: active.slice(0, SECTION_DISPLAY_LIMIT),
-			moreAvailable: active.length > SECTION_DISPLAY_LIMIT || page.totalCount > page.items.length,
-		};
-	}
-
-	private renderIssueRow(issue: IssueResponseDTO, rowEl: HTMLElement): void {
-		rowEl.createDiv({ text: issue.title, cls: "ninety-item-title" });
-		const meta = rowEl.createDiv({ cls: "ninety-picker-sub" });
-		meta.createSpan({ text: issue.intervalCode === "LONG_TERM" ? "Long-term" : "Short-term" });
-		if (issue.priority && issue.priority > 0) {
-			meta.createSpan({ text: ` · Priority ${issue.priority}` });
-		}
-	}
-
-	private renderTodoRow(todo: TodoResponseDTO, rowEl: HTMLElement): void {
-		rowEl.createDiv({ text: todo.title, cls: "ninety-item-title" });
-		if (todo.dueDate) {
-			rowEl.createDiv({
-				text: `Due ${new Date(todo.dueDate).toLocaleDateString()}`,
-				cls: "ninety-picker-sub",
-			});
-		}
-	}
-
-	private renderRockRow(rock: RockResponseDTO, rowEl: HTMLElement): void {
-		rowEl.createDiv({ text: rock.title, cls: "ninety-item-title" });
-		const meta = rowEl.createDiv({ cls: "ninety-picker-sub" });
-		meta.createSpan({ text: rock.statusCode, cls: `ninety-badge ${rockStatusBadgeClass(rock.statusCode)}` });
-		meta.createSpan({ text: ` · ${new Date(rock.dueDate).toLocaleDateString()} · ${rock.quarter}` });
+		return teamId ? fetch(teamId) : Promise.resolve({ items: [], moreAvailable: false });
 	}
 
 	private openCreateIssue(): void {
@@ -213,17 +137,5 @@ export class NinetySidebarView extends ItemView {
 		new CreateRockModal(this.app, this.plugin, getPrefillFromSelection(this.app), () => {
 			void this.rocksSection.refresh();
 		}).open();
-	}
-}
-
-function rockStatusBadgeClass(status: RockResponseDTO["statusCode"]): string {
-	switch (status) {
-		case "ON_TRACK":
-		case "DONE":
-			return "is-on-track";
-		case "OFF_TRACK":
-			return "is-off-track";
-		default:
-			return "is-draft";
 	}
 }
