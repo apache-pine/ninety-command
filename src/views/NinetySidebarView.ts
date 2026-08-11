@@ -1,27 +1,21 @@
-import { type IconName, ItemView, Notice, setIcon, type WorkspaceLeaf } from "obsidian";
+import { DropdownComponent, type IconName, ItemView, type WorkspaceLeaf } from "obsidian";
 import type { IssueResponseDTO } from "../api/resources/issues";
 import type { RockResponseDTO } from "../api/resources/rocks";
 import type { TodoResponseDTO } from "../api/resources/todos";
+import { ensureUsersCache } from "../cache";
 import type NinetyPlugin from "../main";
-import { confirmDelete } from "../modals/ConfirmModal";
 import { CreateIssueModal } from "../modals/CreateIssueModal";
 import { CreateRockModal } from "../modals/CreateRockModal";
 import { CreateTodoModal } from "../modals/CreateTodoModal";
 import { EnterScoreModal } from "../modals/EnterScoreModal";
-import { runRowAction } from "../modals/rowActions";
 import { queryActiveRocks, queryOpenIssues, queryOpenTodos } from "../queries";
 import { renderIssueRow, renderRockRow, renderTodoRow } from "../rendering";
+import { renderIssueRowActions, renderRockRowActions, renderTodoRowActions } from "../rowActionRenderers";
 import { getPrefillFromSelection } from "../utils/prefill";
 import { NinetyScorecardSection } from "./NinetyScorecardSection";
 import { NinetySection } from "./NinetySection";
 
 export const NINETY_VIEW_TYPE = "ninety-io-panel";
-
-function addRowActionButton(actionsEl: HTMLElement, icon: string, label: string): HTMLButtonElement {
-	const btn = actionsEl.createEl("button", { cls: "clickable-icon", attr: { "aria-label": label, title: label } });
-	setIcon(btn, icon);
-	return btn;
-}
 
 export class NinetySidebarView extends ItemView {
 	private gateEl!: HTMLElement;
@@ -30,6 +24,8 @@ export class NinetySidebarView extends ItemView {
 	private todosSection!: NinetySection<TodoResponseDTO>;
 	private rocksSection!: NinetySection<RockResponseDTO>;
 	private scorecardSection!: NinetyScorecardSection;
+	/** Live, session-only override of the default assignee filter — resets to the persisted default on next open. */
+	private currentAssigneeFilter: string | null = null;
 
 	constructor(
 		leaf: WorkspaceLeaf,
@@ -63,6 +59,27 @@ export class NinetySidebarView extends ItemView {
 		const refreshBtn = toolbarEl.createEl("button", { text: "Refresh", cls: "ninety-button" });
 		refreshBtn.addEventListener("click", () => void this.refreshAll());
 
+		this.currentAssigneeFilter = this.plugin.settings.defaultAssigneeUserId;
+
+		const filterEl = contentEl.createDiv({ cls: "ninety-panel-filter" });
+		filterEl.createSpan({ text: "Assignee: ", cls: "ninety-picker-sub" });
+		const assigneeDropdown = new DropdownComponent(filterEl);
+		assigneeDropdown.addOption("", "Everyone");
+		if (this.plugin.settings.defaultAssigneeUserId) {
+			// Seed the persisted default's label immediately, so the dropdown doesn't
+			// flash "Everyone" while the full user list loads in the background.
+			assigneeDropdown.addOption(
+				this.plugin.settings.defaultAssigneeUserId,
+				this.plugin.settings.defaultAssigneeUserName ?? this.plugin.settings.defaultAssigneeUserId,
+			);
+		}
+		assigneeDropdown.setValue(this.currentAssigneeFilter ?? "");
+		assigneeDropdown.onChange((value) => {
+			this.currentAssigneeFilter = value || null;
+			void this.refreshAll();
+		});
+		void this.populateAssigneeDropdown(assigneeDropdown);
+
 		this.gateEl = contentEl.createEl("p", { cls: "ninety-panel-empty" });
 		this.sectionsEl = contentEl.createDiv();
 
@@ -73,10 +90,17 @@ export class NinetySidebarView extends ItemView {
 			onAddClick: () => this.openCreateIssue(),
 			fetchFn: () =>
 				this.withDefaultTeam((teamId) =>
-					queryOpenIssues(this.plugin.apiClient, teamId, this.plugin.settings.defaultItemLimit),
+					queryOpenIssues(
+						this.plugin.apiClient,
+						teamId,
+						this.plugin.settings.defaultItemLimit,
+						undefined,
+						this.currentAssigneeFilter ?? undefined,
+					),
 				),
 			renderItem: renderIssueRow,
-			renderActions: (issue, actionsEl) => this.renderIssueActions(issue, actionsEl),
+			renderActions: (issue, actionsEl) =>
+				renderIssueRowActions(this.plugin, issue, actionsEl, () => void this.issuesSection.refresh()),
 			emptyText: "No open Issues.",
 		});
 
@@ -87,10 +111,16 @@ export class NinetySidebarView extends ItemView {
 			onAddClick: () => this.openCreateTodo(),
 			fetchFn: () =>
 				this.withDefaultTeam((teamId) =>
-					queryOpenTodos(this.plugin.apiClient, teamId, this.plugin.settings.defaultItemLimit),
+					queryOpenTodos(
+						this.plugin.apiClient,
+						teamId,
+						this.plugin.settings.defaultItemLimit,
+						this.currentAssigneeFilter ?? undefined,
+					),
 				),
 			renderItem: renderTodoRow,
-			renderActions: (todo, actionsEl) => this.renderTodoActions(todo, actionsEl),
+			renderActions: (todo, actionsEl) =>
+				renderTodoRowActions(this.plugin, todo, actionsEl, () => void this.todosSection.refresh()),
 			emptyText: "No open To-Dos.",
 		});
 
@@ -101,10 +131,16 @@ export class NinetySidebarView extends ItemView {
 			onAddClick: () => this.openCreateRock(),
 			fetchFn: () =>
 				this.withDefaultTeam((teamId) =>
-					queryActiveRocks(this.plugin.apiClient, teamId, this.plugin.settings.defaultItemLimit),
+					queryActiveRocks(
+						this.plugin.apiClient,
+						teamId,
+						this.plugin.settings.defaultItemLimit,
+						this.currentAssigneeFilter ?? undefined,
+					),
 				),
 			renderItem: renderRockRow,
-			renderActions: (rock, actionsEl) => this.renderRockActions(rock, actionsEl),
+			renderActions: (rock, actionsEl) =>
+				renderRockRowActions(this.plugin, rock, actionsEl, () => void this.rocksSection.refresh()),
 			emptyText: "No active Rocks.",
 		});
 
@@ -153,6 +189,24 @@ export class NinetySidebarView extends ItemView {
 		]);
 	}
 
+	private async populateAssigneeDropdown(dropdown: DropdownComponent): Promise<void> {
+		try {
+			const users = await ensureUsersCache(this.plugin);
+			const currentValue = dropdown.getValue();
+
+			dropdown.selectEl.empty();
+			dropdown.addOption("", "Everyone");
+			for (const user of users) {
+				const name = [user.firstName, user.lastName].filter(Boolean).join(" ");
+				dropdown.addOption(user.id, name || user.primaryEmail || user.id);
+			}
+			dropdown.setValue(currentValue);
+		} catch {
+			// Best-effort — leave whatever options were already there (Everyone, and
+			// maybe the persisted default's seeded label) if the cache fetch fails.
+		}
+	}
+
 	/** refreshAll() already gates on defaultTeamId before calling section.refresh(); this is defense-in-depth. */
 	private withDefaultTeam<T>(
 		fetch: (teamId: string) => Promise<{ items: T[]; moreAvailable: boolean }>,
@@ -161,74 +215,10 @@ export class NinetySidebarView extends ItemView {
 		return teamId ? fetch(teamId) : Promise.resolve({ items: [], moreAvailable: false });
 	}
 
-	// ---- Issues ----
-
-	private renderIssueActions(issue: IssueResponseDTO, actionsEl: HTMLElement): void {
-		const completeBtn = addRowActionButton(actionsEl, "check", "Mark complete");
-		completeBtn.addEventListener("click", () => {
-			void runRowAction(completeBtn, async () => {
-				await this.plugin.apiClient.issues.update(issue.id, { completed: true });
-				new Notice(`Ninety.io: Issue "${issue.title}" completed.`);
-				await this.issuesSection.refresh();
-			});
-		});
-
-		const editBtn = addRowActionButton(actionsEl, "pencil", "Edit");
-		editBtn.addEventListener("click", () => this.openEditIssue(issue));
-
-		const deleteBtn = addRowActionButton(actionsEl, "trash-2", "Delete");
-		deleteBtn.addEventListener("click", () => {
-			void (async () => {
-				const confirmed = await confirmDelete(this.app, `Delete Issue "${issue.title}"? This can't be undone.`);
-				if (!confirmed) return;
-				void runRowAction(deleteBtn, async () => {
-					await this.plugin.apiClient.issues.delete(issue.id);
-					new Notice(`Ninety.io: Issue "${issue.title}" deleted.`);
-					await this.issuesSection.refresh();
-				});
-			})();
-		});
-	}
-
 	private openCreateIssue(): void {
 		new CreateIssueModal(this.app, this.plugin, { mode: "create", prefill: getPrefillFromSelection(this.app) }, () => {
 			void this.issuesSection.refresh();
 		}).open();
-	}
-
-	private openEditIssue(issue: IssueResponseDTO): void {
-		new CreateIssueModal(this.app, this.plugin, { mode: "edit", issue }, () => {
-			void this.issuesSection.refresh();
-		}).open();
-	}
-
-	// ---- To-Dos ----
-
-	private renderTodoActions(todo: TodoResponseDTO, actionsEl: HTMLElement): void {
-		const completeBtn = addRowActionButton(actionsEl, "check", "Mark complete");
-		completeBtn.addEventListener("click", () => {
-			void runRowAction(completeBtn, async () => {
-				await this.plugin.apiClient.todos.update(todo.id, { completed: true });
-				new Notice(`Ninety.io: To-Do "${todo.title}" completed.`);
-				await this.todosSection.refresh();
-			});
-		});
-
-		const editBtn = addRowActionButton(actionsEl, "pencil", "Edit");
-		editBtn.addEventListener("click", () => this.openEditTodo(todo));
-
-		const deleteBtn = addRowActionButton(actionsEl, "trash-2", "Delete");
-		deleteBtn.addEventListener("click", () => {
-			void (async () => {
-				const confirmed = await confirmDelete(this.app, `Delete To-Do "${todo.title}"? This can't be undone.`);
-				if (!confirmed) return;
-				void runRowAction(deleteBtn, async () => {
-					await this.plugin.apiClient.todos.delete(todo.id);
-					new Notice(`Ninety.io: To-Do "${todo.title}" deleted.`);
-					await this.todosSection.refresh();
-				});
-			})();
-		});
 	}
 
 	private openCreateTodo(): void {
@@ -237,49 +227,8 @@ export class NinetySidebarView extends ItemView {
 		}).open();
 	}
 
-	private openEditTodo(todo: TodoResponseDTO): void {
-		new CreateTodoModal(this.app, this.plugin, { mode: "edit", todo }, () => {
-			void this.todosSection.refresh();
-		}).open();
-	}
-
-	// ---- Rocks ----
-
-	private renderRockActions(rock: RockResponseDTO, actionsEl: HTMLElement): void {
-		const completeBtn = addRowActionButton(actionsEl, "check", "Mark done");
-		completeBtn.addEventListener("click", () => {
-			void runRowAction(completeBtn, async () => {
-				await this.plugin.apiClient.rocks.update(rock._id, { statusCode: "DONE" });
-				new Notice(`Ninety.io: Rock "${rock.title}" marked done.`);
-				await this.rocksSection.refresh();
-			});
-		});
-
-		const editBtn = addRowActionButton(actionsEl, "pencil", "Edit");
-		editBtn.addEventListener("click", () => this.openEditRock(rock));
-
-		const deleteBtn = addRowActionButton(actionsEl, "trash-2", "Delete");
-		deleteBtn.addEventListener("click", () => {
-			void (async () => {
-				const confirmed = await confirmDelete(this.app, `Delete Rock "${rock.title}"? This can't be undone.`);
-				if (!confirmed) return;
-				void runRowAction(deleteBtn, async () => {
-					await this.plugin.apiClient.rocks.delete(rock._id);
-					new Notice(`Ninety.io: Rock "${rock.title}" deleted.`);
-					await this.rocksSection.refresh();
-				});
-			})();
-		});
-	}
-
 	private openCreateRock(): void {
 		new CreateRockModal(this.app, this.plugin, { mode: "create", prefill: getPrefillFromSelection(this.app) }, () => {
-			void this.rocksSection.refresh();
-		}).open();
-	}
-
-	private openEditRock(rock: RockResponseDTO): void {
-		new CreateRockModal(this.app, this.plugin, { mode: "edit", rock }, () => {
 			void this.rocksSection.refresh();
 		}).open();
 	}

@@ -18,17 +18,22 @@ export async function queryOpenIssues(
 	teamId: string,
 	limit: number = SECTION_DISPLAY_LIMIT,
 	intervalCode?: IssueInterval,
+	assigneeUserId?: string,
 ): Promise<QueryResult<IssueResponseDTO>> {
 	const page = await apiClient.issues.query({
 		teamId,
 		intervalCode,
 		sortField: "createdDate",
 		sortDirection: "DESC",
-		pageSize: 50,
+		// No server-side assignee filter — over-fetch a bit more when filtering client-side.
+		pageSize: assigneeUserId ? 100 : 50,
 	});
 
 	// No server-side completed/archived filter on this endpoint — filter client-side.
-	const open = page.items.filter((issue) => !issue.completed && !issue.archived);
+	let open = page.items.filter((issue) => !issue.completed && !issue.archived);
+	if (assigneeUserId) {
+		open = open.filter((issue) => issue.userId === assigneeUserId);
+	}
 	return {
 		items: open.slice(0, limit),
 		// Heuristic, not exact: filtering happens after a single raw page, so a team
@@ -41,7 +46,9 @@ export async function queryOpenTodos(
 	apiClient: NinetyApiClient,
 	teamId: string,
 	limit: number = SECTION_DISPLAY_LIMIT,
+	assigneeUserId?: string,
 ): Promise<QueryResult<TodoResponseDTO>> {
+	// No server-side assignee filter — over-fetch a bit more when filtering client-side.
 	const page = await apiClient.todos.queryPaged({
 		teamId,
 		completed: false,
@@ -49,19 +56,25 @@ export async function queryOpenTodos(
 		sort: "dueDate",
 		order: "asc",
 		page: 1,
-		pageSize: limit,
+		pageSize: assigneeUserId ? Math.min(Math.max(limit * 5, 50), 100) : limit,
 	});
 
-	return { items: page.items, moreAvailable: page.totalCount > page.items.length };
+	const items = assigneeUserId ? page.items.filter((todo) => todo.userId === assigneeUserId) : page.items;
+	return {
+		items: items.slice(0, limit),
+		moreAvailable: items.length > limit || page.totalCount > page.items.length,
+	};
 }
 
 export async function queryActiveRocks(
 	apiClient: NinetyApiClient,
 	teamId: string,
 	limit: number = SECTION_DISPLAY_LIMIT,
+	assigneeUserId?: string,
 ): Promise<QueryResult<RockResponseDTO>> {
 	const page = await apiClient.rocks.queryPaged({
 		teamId,
+		userId: assigneeUserId,
 		archived: false,
 		pageSize: 50,
 		sortField: "dueDate",

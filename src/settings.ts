@@ -35,6 +35,7 @@ export class NinetySettingTab extends PluginSettingTab {
 		this.renderConnectionStatusEl(containerEl);
 		this.renderTestConnectionSetting(containerEl);
 		this.renderDefaultTeamSetting(containerEl);
+		this.renderDefaultAssigneeSetting(containerEl);
 		this.renderAutoRefreshSetting(containerEl);
 		this.renderDefaultLimitSetting(containerEl);
 		this.renderCacheSetting(containerEl);
@@ -150,6 +151,43 @@ export class NinetySettingTab extends PluginSettingTab {
 					const selected = teams.find((team) => team._id === value);
 					this.plugin.settings.defaultTeamId = selected ? selected._id : null;
 					this.plugin.settings.defaultTeamName = selected ? selected.name : null;
+					await this.plugin.saveSettings();
+				});
+			});
+	}
+
+	private renderDefaultAssigneeSetting(containerEl: HTMLElement): void {
+		const users = this.plugin.settings.usersCache;
+		const hasUsers = users.length > 0;
+
+		new Setting(containerEl)
+			.setName("Default assignee")
+			.setDesc(
+				hasUsers
+					? "Pre-selects the sidebar panel's assignee filter when it opens. Change it live in the panel any time."
+					: "Click \"Refresh now\" below to load your company's users.",
+			)
+			.addDropdown((dropdown) => {
+				dropdown.setDisabled(!hasUsers);
+
+				if (!hasUsers) {
+					dropdown.addOption("", "No users loaded");
+					return;
+				}
+
+				dropdown.addOption("", "Everyone");
+				for (const user of users) {
+					const name = [user.firstName, user.lastName].filter(Boolean).join(" ");
+					dropdown.addOption(user.id, name || user.primaryEmail || user.id);
+				}
+
+				dropdown.setValue(this.plugin.settings.defaultAssigneeUserId ?? "");
+				dropdown.onChange(async (value) => {
+					const selected = users.find((user) => user.id === value);
+					this.plugin.settings.defaultAssigneeUserId = selected ? selected.id : null;
+					this.plugin.settings.defaultAssigneeUserName = selected
+						? [selected.firstName, selected.lastName].filter(Boolean).join(" ") || selected.primaryEmail || selected.id
+						: null;
 					await this.plugin.saveSettings();
 				});
 			});

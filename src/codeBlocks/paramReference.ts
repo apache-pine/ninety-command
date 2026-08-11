@@ -13,6 +13,12 @@ export const ISSUES_PARAM_REFERENCE: ParamReferenceRow[] = [
 		notes: "Only Issues supports multiple teams in one block",
 	},
 	{ param: "limit", accepts: "Positive integer", default: "Settings → Default item limit", notes: "" },
+	{
+		param: "interactive",
+		accepts: "true / false",
+		default: "false",
+		notes: "Adds complete/edit/delete buttons to each row. Off by default so existing blocks are never silently made editable.",
+	},
 	{ param: "interval", accepts: "short_term / long_term", default: "both", notes: "" },
 	{ param: "completed", accepts: "true / false / any", default: "false", notes: "Client-side filter — no server support" },
 	{ param: "archived", accepts: "true / false / any", default: "false", notes: "Client-side filter — no server support" },
@@ -47,6 +53,12 @@ export const TODOS_PARAM_REFERENCE: ParamReferenceRow[] = [
 		notes: "true shows personal To-Dos only, and team is ignored",
 	},
 	{ param: "limit", accepts: "Positive integer", default: "Settings → Default item limit", notes: "" },
+	{
+		param: "interactive",
+		accepts: "true / false",
+		default: "false",
+		notes: "Adds complete/edit/delete buttons to each row. Off by default so existing blocks are never silently made editable.",
+	},
 	{ param: "completed", accepts: "true / false / any", default: "false", notes: "Server-side filter" },
 	{ param: "archived", accepts: "true / false / any", default: "false", notes: "Server-side filter" },
 	{
@@ -64,6 +76,12 @@ export const TODOS_PARAM_REFERENCE: ParamReferenceRow[] = [
 export const ROCKS_PARAM_REFERENCE: ParamReferenceRow[] = [
 	{ param: "team", accepts: "Team name or id", default: "Configured default team", notes: "Single team only" },
 	{ param: "limit", accepts: "Positive integer", default: "Settings → Default item limit", notes: "" },
+	{
+		param: "interactive",
+		accepts: "true / false",
+		default: "false",
+		notes: "Adds complete/edit/delete buttons to each row. Off by default so existing blocks are never silently made editable.",
+	},
 	{
 		param: "status",
 		accepts: "off_track / on_track / done / canceled / draft",

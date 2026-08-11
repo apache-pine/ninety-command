@@ -8,7 +8,7 @@ import {
 import { describeApiError, NinetyApiError } from "../api/errors";
 import type NinetyPlugin from "../main";
 import type { QueryResult } from "../queries";
-import { parseBlockParams } from "../utils/blockParams";
+import { parseBlockParams, parseTriStateBool } from "../utils/blockParams";
 import { BlockParamError } from "./blockErrors";
 
 export interface BlockContext {
@@ -24,6 +24,8 @@ export interface NinetyBlockConfig<T, TContext extends BlockContext = BlockConte
 	/** Resolves whatever this resource needs (team id(s), personal-mode, etc.) from params. Throws BlockParamError on failure. */
 	resolveContext: (plugin: NinetyPlugin, params: Record<string, string>) => Promise<TContext>;
 	fetch: (plugin: NinetyPlugin, context: TContext, limit: number, params: Record<string, string>) => Promise<QueryResult<T>>;
+	/** Only called when the block sets `interactive: true` — adds complete/edit/delete buttons to each row. */
+	renderActions?: (plugin: NinetyPlugin, item: T, actionsEl: HTMLElement, onChanged: () => void) => void;
 }
 
 export function registerNinetyCodeBlock<T, TContext extends BlockContext>(
@@ -101,9 +103,15 @@ class NinetyBlockRenderChild<T, TContext extends BlockContext> extends MarkdownR
 				return;
 			}
 
+			const interactive = parseTriStateBool(params.interactive, false) === true;
+
 			for (const item of result.items) {
 				const rowEl = this.listEl.createDiv({ cls: "ninety-item" });
 				this.config.renderRow(item, rowEl);
+				if (interactive && this.config.renderActions) {
+					const actionsEl = rowEl.createDiv({ cls: "ninety-item-actions" });
+					this.config.renderActions(this.plugin, item, actionsEl, () => void this.render());
+				}
 			}
 
 			if (result.moreAvailable) {

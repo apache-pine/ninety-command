@@ -15,6 +15,10 @@ export interface NinetySettings {
 	autoRefreshMinutes: number;
 	/** Default row count for the sidebar panel and any code block that doesn't set its own `limit:`. */
 	defaultItemLimit: number;
+	/** Pre-selects the sidebar's assignee filter on open. Doesn't affect code blocks. */
+	defaultAssigneeUserId: string | null;
+	/** Cached label so the dropdown can render without a refetch. */
+	defaultAssigneeUserName: string | null;
 }
 
 export const DEFAULT_SETTINGS: NinetySettings = {
@@ -26,4 +30,6 @@ export const DEFAULT_SETTINGS: NinetySettings = {
 	cacheLastUpdated: null,
 	autoRefreshMinutes: 0,
 	defaultItemLimit: 10,
+	defaultAssigneeUserId: null,
+	defaultAssigneeUserName: null,
 };

@@ -30,6 +30,13 @@
 	margin-bottom: 8px;
 }
 
+.ninety-panel-filter {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	margin-bottom: 8px;
+}
+
 .ninety-panel-empty {
 	color: var(--text-muted);
 	font-size: var(--font-ui-smaller);

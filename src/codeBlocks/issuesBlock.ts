@@ -1,5 +1,6 @@
 import type NinetyPlugin from "../main";
 import { renderIssueRow } from "../rendering";
+import { renderIssueRowActions } from "../rowActionRenderers";
 import { queryIssuesForBlock, resolveIssuesContext } from "./blockQueries";
 import { registerNinetyCodeBlock } from "./renderNinetyBlock";
 
@@ -11,5 +12,6 @@ export function registerIssuesCodeBlock(plugin: NinetyPlugin): void {
 		renderRow: renderIssueRow,
 		resolveContext: resolveIssuesContext,
 		fetch: queryIssuesForBlock,
+		renderActions: renderIssueRowActions,
 	});
 }
