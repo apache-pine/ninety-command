@@ -13,6 +13,8 @@ export interface NinetySettings {
 	cacheLastUpdated: string | null;
 	/** Minutes between automatic sidebar-panel refreshes; 0 disables auto-refresh. */
 	autoRefreshMinutes: number;
+	/** Default row count for the sidebar panel and any code block that doesn't set its own `limit:`. */
+	defaultItemLimit: number;
 }
 
 export const DEFAULT_SETTINGS: NinetySettings = {
@@ -23,4 +25,5 @@ export const DEFAULT_SETTINGS: NinetySettings = {
 	usersCache: [],
 	cacheLastUpdated: null,
 	autoRefreshMinutes: 0,
+	defaultItemLimit: 10,
 };

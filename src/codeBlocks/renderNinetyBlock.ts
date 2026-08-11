@@ -5,45 +5,49 @@ import {
 	setIcon,
 	TFile,
 } from "obsidian";
-import type { NinetyApiClient } from "../api/client";
 import { describeApiError, NinetyApiError } from "../api/errors";
 import type NinetyPlugin from "../main";
-import { type QueryResult, SECTION_DISPLAY_LIMIT } from "../queries";
-import { resolveTeamParam } from "../teamResolution";
+import type { QueryResult } from "../queries";
 import { parseBlockParams } from "../utils/blockParams";
+import { BlockParamError } from "./blockErrors";
 
-export interface NinetyBlockConfig<T> {
+export interface BlockContext {
+	/** Appended to the block's title after " — ". */
+	label: string;
+}
+
+export interface NinetyBlockConfig<T, TContext extends BlockContext = BlockContext> {
 	language: string;
 	resourceLabel: string;
 	emptyText: string;
 	renderRow: (item: T, rowEl: HTMLElement) => void;
-	fetch: (
-		apiClient: NinetyApiClient,
-		teamId: string,
-		limit: number,
-		params: Record<string, string>,
-	) => Promise<QueryResult<T>>;
+	/** Resolves whatever this resource needs (team id(s), personal-mode, etc.) from params. Throws BlockParamError on failure. */
+	resolveContext: (plugin: NinetyPlugin, params: Record<string, string>) => Promise<TContext>;
+	fetch: (plugin: NinetyPlugin, context: TContext, limit: number, params: Record<string, string>) => Promise<QueryResult<T>>;
 }
 
-export function registerNinetyCodeBlock<T>(plugin: NinetyPlugin, config: NinetyBlockConfig<T>): void {
+export function registerNinetyCodeBlock<T, TContext extends BlockContext>(
+	plugin: NinetyPlugin,
+	config: NinetyBlockConfig<T, TContext>,
+): void {
 	plugin.registerMarkdownCodeBlockProcessor(config.language, (source, el, ctx) => {
 		ctx.addChild(new NinetyBlockRenderChild(el, plugin, config, source, ctx));
 	});
 }
 
-function parseLimitParam(value: string | undefined): number {
+function parseLimitParam(value: string | undefined, defaultValue: number): number {
 	const n = Number(value);
-	return Number.isFinite(n) && n > 0 ? n : SECTION_DISPLAY_LIMIT;
+	return Number.isFinite(n) && n > 0 ? n : defaultValue;
 }
 
-class NinetyBlockRenderChild<T> extends MarkdownRenderChild {
+class NinetyBlockRenderChild<T, TContext extends BlockContext> extends MarkdownRenderChild {
 	private titleEl!: HTMLElement;
 	private listEl!: HTMLElement;
 
 	constructor(
 		containerEl: HTMLElement,
 		private plugin: NinetyPlugin,
-		private config: NinetyBlockConfig<T>,
+		private config: NinetyBlockConfig<T, TContext>,
 		private source: string,
 		private ctx: MarkdownPostProcessorContext,
 	) {
@@ -81,21 +85,13 @@ class NinetyBlockRenderChild<T> extends MarkdownRenderChild {
 		const params = parseBlockParams(this.source);
 
 		try {
-			const resolved = await resolveTeamParam(this.plugin, params.team);
+			const context = await this.config.resolveContext(this.plugin, params);
 			if (!this.containerEl.isConnected) return;
 
-			if (!resolved) {
-				const message = params.team
-					? `Ninety.io: team "${params.team}" not found.`
-					: "Ninety.io: no team specified and no default team set in Settings → Ninety.io.";
-				this.renderMessage(message);
-				return;
-			}
+			this.titleEl.setText(`${this.config.resourceLabel} — ${context.label}`);
 
-			this.titleEl.setText(`${this.config.resourceLabel} — ${resolved.teamName}`);
-
-			const limit = parseLimitParam(params.limit);
-			const result = await this.config.fetch(this.plugin.apiClient, resolved.teamId, limit, params);
+			const limit = parseLimitParam(params.limit, this.plugin.settings.defaultItemLimit);
+			const result = await this.config.fetch(this.plugin, context, limit, params);
 			if (!this.containerEl.isConnected) return;
 
 			this.listEl.empty();
@@ -115,7 +111,12 @@ class NinetyBlockRenderChild<T> extends MarkdownRenderChild {
 			}
 		} catch (err) {
 			if (!this.containerEl.isConnected) return;
-			const message = err instanceof NinetyApiError ? describeApiError(err) : "Ninety.io: failed to load.";
+			const message =
+				err instanceof NinetyApiError
+					? describeApiError(err)
+					: err instanceof BlockParamError
+						? err.message
+						: "Ninety.io: failed to load.";
 			this.renderMessage(message);
 		}
 	}

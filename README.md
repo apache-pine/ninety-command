@@ -1,6 +1,12 @@
 # Ninety.io for Obsidian
 
-Connects Obsidian to the [Ninety.io](https://www.ninety.io/) Public API so you can capture Issues, To-Dos, and Rocks without leaving your vault.
+Connects Obsidian to the [Ninety.io](https://www.ninety.io/) Public API — create, complete, edit, and delete Issues, To-Dos, and Rocks; track Scorecard Measurables; and embed live views of any of them in your notes, without leaving your vault.
+
+## Features
+
+- **Command palette**: create Issues, To-Dos, and Rocks (with selection prefill), and add Milestones to a Rock.
+- **Sidebar panel**: Issues, To-Dos, Rocks, and Scorecard for your default team, with quick complete/edit/delete actions on each row.
+- **Code block embeds**: ` ```ninety-issues ` / ` ```ninety-todos ` / ` ```ninety-rocks ` blocks render live lists inline in a note, with an extensive set of filter/sort parameters (team, assignee, status, completed/archived, search, and more). See **Settings → Ninety.io → Code block parameter reference** for the full list of parameters each block type accepts.
 
 ## Setup
 
@@ -21,4 +27,4 @@ This watches `src/` and rebuilds `main.js` on save. Copy (or symlink) `main.js`,
 
 ## Status
 
-Early scaffold — settings and API connectivity only. Capture commands, a sidebar view, and note embeds are planned next.
+Feature-complete for day-to-day tracking: capture, complete/edit/delete, the sidebar panel, Scorecard, and richly-parameterized code block embeds are all in place. Not covered by the Ninety.io Public API (and so out of scope here): L10 meetings, the Vision/Traction Organizer, the Accountability Chart, and comments/attachments.

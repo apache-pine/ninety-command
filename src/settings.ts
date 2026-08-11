@@ -1,6 +1,12 @@
 import { type App, Notice, PluginSettingTab, Setting } from "obsidian";
 import { describeApiError, NinetyApiError } from "./api/errors";
 import { fetchAndCacheAll, fetchAndCacheTeams } from "./cache";
+import {
+	ISSUES_PARAM_REFERENCE,
+	type ParamReferenceRow,
+	ROCKS_PARAM_REFERENCE,
+	TODOS_PARAM_REFERENCE,
+} from "./codeBlocks/paramReference";
 import type NinetyPlugin from "./main";
 
 type ConnectionStatus =
@@ -30,8 +36,10 @@ export class NinetySettingTab extends PluginSettingTab {
 		this.renderTestConnectionSetting(containerEl);
 		this.renderDefaultTeamSetting(containerEl);
 		this.renderAutoRefreshSetting(containerEl);
+		this.renderDefaultLimitSetting(containerEl);
 		this.renderCacheSetting(containerEl);
 		this.renderNinetyLink(containerEl);
+		this.renderParamReferenceSetting(containerEl);
 	}
 
 	private renderTokenSetting(containerEl: HTMLElement): void {
@@ -209,6 +217,25 @@ export class NinetySettingTab extends PluginSettingTab {
 			});
 	}
 
+	private renderDefaultLimitSetting(containerEl: HTMLElement): void {
+		new Setting(containerEl)
+			.setName("Default item limit")
+			.setDesc(
+				"Default number of rows shown per sidebar section, and in any code block that doesn't set its own limit:.",
+			)
+			.addText((text) => {
+				text.inputEl.type = "number";
+				text.inputEl.min = "1";
+				text.setValue(String(this.plugin.settings.defaultItemLimit)).onChange(async (value) => {
+					const n = Number(value);
+					if (Number.isFinite(n) && n > 0) {
+						this.plugin.settings.defaultItemLimit = Math.floor(n);
+						await this.plugin.saveSettings();
+					}
+				});
+			});
+	}
+
 	private renderNinetyLink(containerEl: HTMLElement): void {
 		const p = containerEl.createEl("p", { cls: "ninety-picker-sub" });
 		p.createEl("a", {
@@ -216,5 +243,38 @@ export class NinetySettingTab extends PluginSettingTab {
 			href: "https://app.ninety.io",
 			attr: { target: "_blank", rel: "noopener" },
 		});
+	}
+
+	private renderParamReferenceSetting(containerEl: HTMLElement): void {
+		const details = containerEl.createEl("details", { cls: "ninety-param-reference" });
+		details.createEl("summary", { text: "Code block parameter reference" });
+
+		details.createEl("p", {
+			cls: "ninety-picker-sub",
+			text: "Each line inside a code block is a key: value pair. Unrecognized keys are ignored.",
+		});
+
+		this.renderParamSection(details, "ninety-issues", ISSUES_PARAM_REFERENCE);
+		this.renderParamSection(details, "ninety-todos", TODOS_PARAM_REFERENCE);
+		this.renderParamSection(details, "ninety-rocks", ROCKS_PARAM_REFERENCE);
+	}
+
+	private renderParamSection(container: HTMLElement, language: string, rows: ParamReferenceRow[]): void {
+		container.createEl("h4").createEl("code", { text: language });
+
+		const table = container.createEl("table", { cls: "ninety-param-table" });
+		const headerRow = table.createEl("thead").createEl("tr");
+		for (const heading of ["Parameter", "Accepts", "Default", "Notes"]) {
+			headerRow.createEl("th", { text: heading });
+		}
+
+		const tbody = table.createEl("tbody");
+		for (const row of rows) {
+			const tr = tbody.createEl("tr");
+			tr.createEl("td", { text: row.param });
+			tr.createEl("td", { text: row.accepts });
+			tr.createEl("td", { text: row.default });
+			tr.createEl("td", { text: row.notes });
+		}
 	}
 }

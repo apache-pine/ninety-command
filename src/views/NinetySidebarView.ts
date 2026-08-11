@@ -71,7 +71,10 @@ export class NinetySidebarView extends ItemView {
 			title: "Issues",
 			addButtonLabel: "Create Issue",
 			onAddClick: () => this.openCreateIssue(),
-			fetchFn: () => this.withDefaultTeam((teamId) => queryOpenIssues(this.plugin.apiClient, teamId)),
+			fetchFn: () =>
+				this.withDefaultTeam((teamId) =>
+					queryOpenIssues(this.plugin.apiClient, teamId, this.plugin.settings.defaultItemLimit),
+				),
 			renderItem: renderIssueRow,
 			renderActions: (issue, actionsEl) => this.renderIssueActions(issue, actionsEl),
 			emptyText: "No open Issues.",
@@ -82,7 +85,10 @@ export class NinetySidebarView extends ItemView {
 			title: "To-Dos",
 			addButtonLabel: "Create To-Do",
 			onAddClick: () => this.openCreateTodo(),
-			fetchFn: () => this.withDefaultTeam((teamId) => queryOpenTodos(this.plugin.apiClient, teamId)),
+			fetchFn: () =>
+				this.withDefaultTeam((teamId) =>
+					queryOpenTodos(this.plugin.apiClient, teamId, this.plugin.settings.defaultItemLimit),
+				),
 			renderItem: renderTodoRow,
 			renderActions: (todo, actionsEl) => this.renderTodoActions(todo, actionsEl),
 			emptyText: "No open To-Dos.",
@@ -93,7 +99,10 @@ export class NinetySidebarView extends ItemView {
 			title: "Rocks",
 			addButtonLabel: "Create Rock",
 			onAddClick: () => this.openCreateRock(),
-			fetchFn: () => this.withDefaultTeam((teamId) => queryActiveRocks(this.plugin.apiClient, teamId)),
+			fetchFn: () =>
+				this.withDefaultTeam((teamId) =>
+					queryActiveRocks(this.plugin.apiClient, teamId, this.plugin.settings.defaultItemLimit),
+				),
 			renderItem: renderRockRow,
 			renderActions: (rock, actionsEl) => this.renderRockActions(rock, actionsEl),
 			emptyText: "No active Rocks.",

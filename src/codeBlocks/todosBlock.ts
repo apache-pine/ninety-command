@@ -1,6 +1,6 @@
 import type NinetyPlugin from "../main";
-import { queryOpenTodos } from "../queries";
 import { renderTodoRow } from "../rendering";
+import { queryTodosForBlock, resolveTodosContext } from "./blockQueries";
 import { registerNinetyCodeBlock } from "./renderNinetyBlock";
 
 export function registerTodosCodeBlock(plugin: NinetyPlugin): void {
@@ -9,6 +9,7 @@ export function registerTodosCodeBlock(plugin: NinetyPlugin): void {
 		resourceLabel: "To-Dos",
 		emptyText: "No open To-Dos.",
 		renderRow: renderTodoRow,
-		fetch: (apiClient, teamId, limit) => queryOpenTodos(apiClient, teamId, limit),
+		resolveContext: resolveTodosContext,
+		fetch: queryTodosForBlock,
 	});
 }
