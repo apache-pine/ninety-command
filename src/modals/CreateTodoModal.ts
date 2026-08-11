@@ -127,7 +127,7 @@ export class CreateTodoModal extends Modal {
 
 					void runSubmit(btn, isEdit ? "Saving…" : "Creating…", async () => {
 						if (this.modeOpts.mode === "edit") {
-							const updated = await this.plugin.apiClient.todos.update(this.modeOpts.todo.id, {
+							const updated = await this.plugin.apiClient.todos.update(this.modeOpts.todo._id, {
 								title: this.title.trim(),
 								description: this.description || undefined,
 								dueDate: this.dueDate || undefined,

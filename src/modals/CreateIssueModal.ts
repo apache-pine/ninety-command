@@ -130,7 +130,7 @@ export class CreateIssueModal extends Modal {
 						const description = this.description ? this.description.split("\n").join("<br>\n") : undefined;
 
 						if (this.modeOpts.mode === "edit") {
-							const updated = await this.plugin.apiClient.issues.update(this.modeOpts.issue.id, {
+							const updated = await this.plugin.apiClient.issues.update(this.modeOpts.issue._id, {
 								title: this.title.trim(),
 								teamId: this.teamId,
 								interval: this.interval,

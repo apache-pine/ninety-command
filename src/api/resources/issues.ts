@@ -2,7 +2,8 @@ import type { NinetyApiClient } from "../client";
 import type { AscDescSortDirection, IssueInterval, PaginatedResponse } from "../types";
 
 export interface IssueResponseDTO {
-	id: string;
+	/** Despite the swagger doc calling this `id`, the live API actually returns `_id`. */
+	_id: string;
 	userId: string;
 	teamId: string;
 	companyId: string;

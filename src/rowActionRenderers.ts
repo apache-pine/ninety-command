@@ -32,7 +32,7 @@ export function renderIssueRowActions(
 	const completeBtn = addRowActionButton(actionsEl, "check", "Mark complete");
 	completeBtn.addEventListener("click", () => {
 		void runRowAction(completeBtn, async () => {
-			await plugin.apiClient.issues.update(issue.id, { completed: true });
+			await plugin.apiClient.issues.update(issue._id, { completed: true });
 			new Notice(`Ninety.io: Issue "${issue.title}" completed.`);
 			onChanged();
 		});
@@ -49,7 +49,7 @@ export function renderIssueRowActions(
 			const confirmed = await confirmDelete(plugin.app, `Delete Issue "${issue.title}"? This can't be undone.`);
 			if (!confirmed) return;
 			void runRowAction(deleteBtn, async () => {
-				await plugin.apiClient.issues.delete(issue.id);
+				await plugin.apiClient.issues.delete(issue._id);
 				new Notice(`Ninety.io: Issue "${issue.title}" deleted.`);
 				onChanged();
 			});
@@ -66,7 +66,7 @@ export function renderTodoRowActions(
 	const completeBtn = addRowActionButton(actionsEl, "check", "Mark complete");
 	completeBtn.addEventListener("click", () => {
 		void runRowAction(completeBtn, async () => {
-			await plugin.apiClient.todos.update(todo.id, { completed: true });
+			await plugin.apiClient.todos.update(todo._id, { completed: true });
 			new Notice(`Ninety.io: To-Do "${todo.title}" completed.`);
 			onChanged();
 		});
@@ -83,7 +83,7 @@ export function renderTodoRowActions(
 			const confirmed = await confirmDelete(plugin.app, `Delete To-Do "${todo.title}"? This can't be undone.`);
 			if (!confirmed) return;
 			void runRowAction(deleteBtn, async () => {
-				await plugin.apiClient.todos.delete(todo.id);
+				await plugin.apiClient.todos.delete(todo._id);
 				new Notice(`Ninety.io: To-Do "${todo.title}" deleted.`);
 				onChanged();
 			});

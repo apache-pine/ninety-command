@@ -2,7 +2,8 @@ import type { NinetyApiClient } from "../client";
 import type { AscDescSortDirectionLower, PaginatedResponse } from "../types";
 
 export interface TodoResponseDTO {
-	id: string;
+	/** Despite the swagger doc calling this `id`, the live API actually returns `_id`. */
+	_id: string;
 	title: string;
 	description?: string;
 	dueDate?: string;
@@ -14,7 +15,8 @@ export interface TodoResponseDTO {
 	userId: string;
 	companyId: string;
 	createdDate: string;
-	updatedDate: string;
+	/** Not actually present on live API responses despite the swagger doc; treat as absent. */
+	updatedDate?: string;
 }
 
 export interface CreateTodoDTO {
