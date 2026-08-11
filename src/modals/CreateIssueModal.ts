@@ -1,11 +1,11 @@
 import { type App, Modal, Notice, Setting } from "obsidian";
-import { describeApiError, NinetyApiError } from "../api/errors";
+import { describeApiError, CommandApiError } from "../api/errors";
 import type { IssueResponseDTO } from "../api/resources/issues";
 import type { AvailableTeamResponseDTO } from "../api/resources/teams";
 import type { IssueInterval } from "../api/types";
 import type { CompanyUserResponseDTO } from "../api/resources/users";
 import { ensureTeamsCache, ensureUsersCache } from "../cache";
-import type NinetyPlugin from "../main";
+import type CommandPlugin from "../main";
 import { htmlDescriptionToEditable } from "../utils/html";
 import type { CapturePrefill } from "../utils/prefill";
 import { addTeamDropdown, addUserDropdown, runSubmit } from "./formHelpers";
@@ -22,7 +22,7 @@ export class CreateIssueModal extends Modal {
 
 	constructor(
 		app: App,
-		private plugin: NinetyPlugin,
+		private plugin: CommandPlugin,
 		private modeOpts: IssueModalMode,
 		private onSaved?: () => void,
 	) {
@@ -42,8 +42,8 @@ export class CreateIssueModal extends Modal {
 	async onOpen(): Promise<void> {
 		const { contentEl } = this;
 		const isEdit = this.modeOpts.mode === "edit";
-		contentEl.createEl("h2", { text: isEdit ? "Edit Ninety Issue" : "Create Ninety Issue" });
-		const loadingEl = contentEl.createEl("p", { text: "Loading teams…", cls: "ninety-modal-loading" });
+		contentEl.createEl("h2", { text: isEdit ? "Edit Issue" : "Create Issue" });
+		const loadingEl = contentEl.createEl("p", { text: "Loading teams…", cls: "ninety-command-modal-loading" });
 
 		try {
 			const [teams] = await Promise.all([ensureTeamsCache(this.plugin), ensureUsersCache(this.plugin)]);
@@ -51,7 +51,7 @@ export class CreateIssueModal extends Modal {
 			loadingEl.remove();
 			this.renderForm(teams, users);
 		} catch (err) {
-			const message = err instanceof NinetyApiError ? describeApiError(err) : "Ninety.io: failed to load teams.";
+			const message = err instanceof CommandApiError ? describeApiError(err) : "Ninety Command: failed to load teams.";
 			loadingEl.setText(message);
 		}
 	}
@@ -118,11 +118,11 @@ export class CreateIssueModal extends Modal {
 				.setCta()
 				.onClick(() => {
 					if (!this.title.trim()) {
-						new Notice("Ninety.io: enter a title.");
+						new Notice("Ninety Command: enter a title.");
 						return;
 					}
 					if (!this.teamId) {
-						new Notice("Ninety.io: select a team.");
+						new Notice("Ninety Command: select a team.");
 						return;
 					}
 
@@ -137,7 +137,7 @@ export class CreateIssueModal extends Modal {
 								description,
 								priority: this.priority,
 							});
-							new Notice(`Ninety.io: Issue "${updated.title}" updated.`);
+							new Notice(`Ninety Command: Issue "${updated.title}" updated.`);
 						} else {
 							const created = await this.plugin.apiClient.issues.create({
 								title: this.title.trim(),
@@ -147,7 +147,7 @@ export class CreateIssueModal extends Modal {
 								priority: this.priority,
 								userId: this.userId || undefined,
 							});
-							new Notice(`Ninety.io: Issue "${created.title}" created.`);
+							new Notice(`Ninety Command: Issue "${created.title}" created.`);
 						}
 						this.onSaved?.();
 						this.close();

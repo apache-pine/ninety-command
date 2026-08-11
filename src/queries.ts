@@ -1,4 +1,4 @@
-import type { NinetyApiClient } from "./api/client";
+import type { CommandApiClient } from "./api/client";
 import type { IssueResponseDTO } from "./api/resources/issues";
 import type { RockResponseDTO } from "./api/resources/rocks";
 import type { TodoResponseDTO } from "./api/resources/todos";
@@ -14,7 +14,7 @@ export interface QueryResult<T> {
 }
 
 export async function queryOpenIssues(
-	apiClient: NinetyApiClient,
+	apiClient: CommandApiClient,
 	teamId: string,
 	limit: number = SECTION_DISPLAY_LIMIT,
 	intervalCode?: IssueInterval,
@@ -43,7 +43,7 @@ export async function queryOpenIssues(
 }
 
 export async function queryOpenTodos(
-	apiClient: NinetyApiClient,
+	apiClient: CommandApiClient,
 	teamId: string,
 	limit: number = SECTION_DISPLAY_LIMIT,
 	assigneeUserId?: string,
@@ -67,7 +67,7 @@ export async function queryOpenTodos(
 }
 
 export async function queryActiveRocks(
-	apiClient: NinetyApiClient,
+	apiClient: CommandApiClient,
 	teamId: string,
 	limit: number = SECTION_DISPLAY_LIMIT,
 	assigneeUserId?: string,

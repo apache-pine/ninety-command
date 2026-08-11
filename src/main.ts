@@ -1,6 +1,6 @@
 import { Notice, Plugin } from "obsidian";
-import { NinetyApiClient } from "./api/client";
-import { describeApiError, NinetyApiError } from "./api/errors";
+import { CommandApiClient } from "./api/client";
+import { describeApiError, CommandApiError } from "./api/errors";
 import { ensureTeamsCache } from "./cache";
 import { registerIssuesCodeBlock } from "./codeBlocks/issuesBlock";
 import { registerRocksCodeBlock } from "./codeBlocks/rocksBlock";
@@ -10,31 +10,31 @@ import { CreateMilestoneModal } from "./modals/CreateMilestoneModal";
 import { CreateRockModal } from "./modals/CreateRockModal";
 import { CreateTodoModal } from "./modals/CreateTodoModal";
 import { RockPickerModal } from "./modals/RockPickerModal";
-import { NinetySettingTab } from "./settings";
-import { DEFAULT_SETTINGS, type NinetySettings } from "./types/settings";
+import { CommandSettingTab } from "./settings";
+import { DEFAULT_SETTINGS, type CommandSettings } from "./types/settings";
 import { getPrefillFromSelection } from "./utils/prefill";
-import { NINETY_VIEW_TYPE, NinetySidebarView } from "./views/NinetySidebarView";
+import { COMMAND_VIEW_TYPE, CommandSidebarView } from "./views/CommandSidebarView";
 
-export default class NinetyPlugin extends Plugin {
-	settings!: NinetySettings;
-	apiClient!: NinetyApiClient;
+export default class CommandPlugin extends Plugin {
+	settings!: CommandSettings;
+	apiClient!: CommandApiClient;
 	private autoRefreshIntervalId: number | null = null;
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
 
-		this.apiClient = new NinetyApiClient(() => this.settings.apiToken);
+		this.apiClient = new CommandApiClient(() => this.settings.apiToken);
 
-		this.addSettingTab(new NinetySettingTab(this.app, this));
+		this.addSettingTab(new CommandSettingTab(this.app, this));
 		this.registerCommands();
 
-		this.registerView(NINETY_VIEW_TYPE, (leaf) => new NinetySidebarView(leaf, this));
-		this.addRibbonIcon("layout-list", "Open Ninety.io panel", () => {
+		this.registerView(COMMAND_VIEW_TYPE, (leaf) => new CommandSidebarView(leaf, this));
+		this.addRibbonIcon("layout-list", "Open Ninety Command panel", () => {
 			void this.activateView();
 		});
 		this.addCommand({
-			id: "open-ninety-panel",
-			name: "Open Ninety.io panel",
+			id: "open-ninety-command-panel",
+			name: "Open Ninety Command panel",
 			callback: () => {
 				void this.activateView();
 			},
@@ -48,7 +48,7 @@ export default class NinetyPlugin extends Plugin {
 	}
 
 	onunload(): void {
-		this.app.workspace.detachLeavesOfType(NINETY_VIEW_TYPE);
+		this.app.workspace.detachLeavesOfType(COMMAND_VIEW_TYPE);
 	}
 
 	async loadSettings(): Promise<void> {
@@ -99,7 +99,7 @@ export default class NinetyPlugin extends Plugin {
 
 	/** Reuses an existing panel leaf if one's already open, rather than creating duplicates. */
 	async activateView(): Promise<void> {
-		const existing = this.app.workspace.getLeavesOfType(NINETY_VIEW_TYPE);
+		const existing = this.app.workspace.getLeavesOfType(COMMAND_VIEW_TYPE);
 		if (existing.length > 0) {
 			await this.app.workspace.revealLeaf(existing[0]);
 			return;
@@ -107,11 +107,11 @@ export default class NinetyPlugin extends Plugin {
 
 		const leaf = this.app.workspace.getRightLeaf(false);
 		if (!leaf) {
-			new Notice("Ninety.io: couldn't open the panel — no sidebar space available.");
+			new Notice("Ninety Command: couldn't open the panel — no sidebar space available.");
 			return;
 		}
 
-		await leaf.setViewState({ type: NINETY_VIEW_TYPE, active: true });
+		await leaf.setViewState({ type: COMMAND_VIEW_TYPE, active: true });
 		await this.app.workspace.revealLeaf(leaf);
 	}
 
@@ -134,8 +134,8 @@ export default class NinetyPlugin extends Plugin {
 	}
 
 	private refreshOpenPanels(): void {
-		for (const leaf of this.app.workspace.getLeavesOfType(NINETY_VIEW_TYPE)) {
-			if (leaf.view instanceof NinetySidebarView) {
+		for (const leaf of this.app.workspace.getLeavesOfType(COMMAND_VIEW_TYPE)) {
+			if (leaf.view instanceof CommandSidebarView) {
 				void leaf.view.refreshAll();
 			}
 		}
@@ -143,7 +143,7 @@ export default class NinetyPlugin extends Plugin {
 
 	private requireToken(): boolean {
 		if (!this.settings.apiToken) {
-			new Notice("Ninety.io: enter an API token first, in Settings → Ninety.io.");
+			new Notice("Ninety Command: enter an API token first, in Settings → Ninety Command.");
 			return false;
 		}
 		return true;
@@ -154,7 +154,7 @@ export default class NinetyPlugin extends Plugin {
 	 * labeling) must be fetched before RockPickerModal is constructed.
 	 */
 	private async openRockPickerForMilestone(): Promise<void> {
-		const notice = new Notice("Ninety.io: loading Rocks…", 0);
+		const notice = new Notice("Ninety Command: loading Rocks…", 0);
 		try {
 			const teamId = this.settings.defaultTeamId ?? undefined;
 			const [teams, page] = await Promise.all([
@@ -171,7 +171,7 @@ export default class NinetyPlugin extends Plugin {
 			notice.hide();
 
 			if (page.items.length === 0) {
-				new Notice("Ninety.io: no Rocks found to add a Milestone to.");
+				new Notice("Ninety Command: no Rocks found to add a Milestone to.");
 				return;
 			}
 
@@ -181,7 +181,7 @@ export default class NinetyPlugin extends Plugin {
 			}).open();
 		} catch (err) {
 			notice.hide();
-			const message = err instanceof NinetyApiError ? describeApiError(err) : "Ninety.io: failed to load Rocks.";
+			const message = err instanceof CommandApiError ? describeApiError(err) : "Ninety Command: failed to load Rocks.";
 			new Notice(message);
 		}
 	}

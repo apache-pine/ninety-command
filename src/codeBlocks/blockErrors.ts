@@ -3,10 +3,10 @@ export class BlockParamError extends Error {}
 
 export function teamResolutionFailedMessage(teamParam?: string): string {
 	return teamParam
-		? `Ninety.io: team "${teamParam}" not found.`
-		: "Ninety.io: no team specified and no default team set in Settings → Ninety.io.";
+		? `Ninety Command: team "${teamParam}" not found.`
+		: "Ninety Command: no team specified and no default team set in Settings → Ninety Command.";
 }
 
 export function userNotFoundMessage(value: string): string {
-	return `Ninety.io: no user found matching "${value}".`;
+	return `Ninety Command: no user found matching "${value}".`;
 }

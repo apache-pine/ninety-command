@@ -1,5 +1,5 @@
 import { requestUrl } from "obsidian";
-import { NinetyApiError } from "./errors";
+import { CommandApiError } from "./errors";
 import { createIssuesResource, type IssuesResource } from "./resources/issues";
 import { createMilestonesResource, type MilestonesResource } from "./resources/milestones";
 import { createRocksResource, type RocksResource } from "./resources/rocks";
@@ -12,7 +12,7 @@ const BASE_URL = "https://api.public.ninety.io/v1";
 
 type HttpMethod = "GET" | "POST" | "PATCH" | "DELETE";
 
-export interface NinetyRequestOptions {
+export interface CommandRequestOptions {
 	method: HttpMethod;
 	/** Path relative to the API base, e.g. "/issues/query". */
 	path: string;
@@ -27,7 +27,7 @@ export interface NinetyRequestOptions {
  * Reads the token via a getter (rather than a copied string) so settings edits
  * take effect immediately without re-instantiating the client.
  */
-export class NinetyApiClient {
+export class CommandApiClient {
 	readonly issues: IssuesResource;
 	readonly todos: TodosResource;
 	readonly rocks: RocksResource;
@@ -46,7 +46,7 @@ export class NinetyApiClient {
 		this.scorecard = createScorecardResource(this);
 	}
 
-	async request<TResponse>(opts: NinetyRequestOptions): Promise<TResponse> {
+	async request<TResponse>(opts: CommandRequestOptions): Promise<TResponse> {
 		const url = this.buildUrl(opts.path, opts.query);
 		const token = this.getToken();
 
@@ -64,16 +64,16 @@ export class NinetyApiClient {
 				throw: false,
 			});
 		} catch (err) {
-			throw new NinetyApiError(
+			throw new CommandApiError(
 				0,
 				err instanceof Error ? err.message : String(err),
 				opts.path,
-				"Ninety.io: couldn't reach the API — check your connection.",
+				"Ninety Command: couldn't reach the API — check your connection.",
 			);
 		}
 
 		if (response.status < 200 || response.status >= 300) {
-			throw new NinetyApiError(response.status, response.text, opts.path);
+			throw new CommandApiError(response.status, response.text, opts.path);
 		}
 
 		if (opts.expectBody === false || !response.text) {
@@ -83,7 +83,7 @@ export class NinetyApiClient {
 		return JSON.parse(response.text) as TResponse;
 	}
 
-	private buildUrl(path: string, query?: NinetyRequestOptions["query"]): string {
+	private buildUrl(path: string, query?: CommandRequestOptions["query"]): string {
 		const url = new URL(`${BASE_URL}${path}`);
 		if (query) {
 			for (const [key, value] of Object.entries(query)) {

@@ -1,10 +1,10 @@
 import { type App, Modal, Notice, Setting } from "obsidian";
-import { describeApiError, NinetyApiError } from "../api/errors";
+import { describeApiError, CommandApiError } from "../api/errors";
 import type { AvailableTeamResponseDTO } from "../api/resources/teams";
 import type { TodoResponseDTO } from "../api/resources/todos";
 import type { CompanyUserResponseDTO } from "../api/resources/users";
 import { ensureTeamsCache, ensureUsersCache } from "../cache";
-import type NinetyPlugin from "../main";
+import type CommandPlugin from "../main";
 import type { CapturePrefill } from "../utils/prefill";
 import { addDateField, addTeamDropdown, addUserDropdown, runSubmit } from "./formHelpers";
 
@@ -26,7 +26,7 @@ export class CreateTodoModal extends Modal {
 
 	constructor(
 		app: App,
-		private plugin: NinetyPlugin,
+		private plugin: CommandPlugin,
 		private modeOpts: TodoModalMode,
 		private onSaved?: () => void,
 	) {
@@ -51,15 +51,15 @@ export class CreateTodoModal extends Modal {
 	async onOpen(): Promise<void> {
 		const { contentEl } = this;
 		const isEdit = this.modeOpts.mode === "edit";
-		contentEl.createEl("h2", { text: isEdit ? "Edit Ninety To-Do" : "Create Ninety To-Do" });
-		const loadingEl = contentEl.createEl("p", { text: "Loading teams…", cls: "ninety-modal-loading" });
+		contentEl.createEl("h2", { text: isEdit ? "Edit To-Do" : "Create To-Do" });
+		const loadingEl = contentEl.createEl("p", { text: "Loading teams…", cls: "ninety-command-modal-loading" });
 
 		try {
 			await Promise.all([ensureTeamsCache(this.plugin), ensureUsersCache(this.plugin)]);
 			loadingEl.remove();
 			this.renderForm(this.plugin.settings.teamsCache, this.plugin.settings.usersCache);
 		} catch (err) {
-			const message = err instanceof NinetyApiError ? describeApiError(err) : "Ninety.io: failed to load teams.";
+			const message = err instanceof CommandApiError ? describeApiError(err) : "Ninety Command: failed to load teams.";
 			loadingEl.setText(message);
 		}
 	}
@@ -121,7 +121,7 @@ export class CreateTodoModal extends Modal {
 				.setCta()
 				.onClick(() => {
 					if (!this.title.trim()) {
-						new Notice("Ninety.io: enter a title.");
+						new Notice("Ninety Command: enter a title.");
 						return;
 					}
 
@@ -135,7 +135,7 @@ export class CreateTodoModal extends Modal {
 								repeat: this.repeat || undefined,
 								userId: this.userId || undefined,
 							});
-							new Notice(`Ninety.io: To-Do "${updated.title}" updated.`);
+							new Notice(`Ninety Command: To-Do "${updated.title}" updated.`);
 						} else {
 							const created = await this.plugin.apiClient.todos.create({
 								title: this.title.trim(),
@@ -145,7 +145,7 @@ export class CreateTodoModal extends Modal {
 								repeat: this.repeat || undefined,
 								userId: this.userId || undefined,
 							});
-							new Notice(`Ninety.io: To-Do "${created.title}" created.`);
+							new Notice(`Ninety Command: To-Do "${created.title}" created.`);
 						}
 						this.onSaved?.();
 						this.close();

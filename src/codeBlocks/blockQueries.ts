@@ -2,13 +2,13 @@ import type { IssueResponseDTO } from "../api/resources/issues";
 import type { RockResponseDTO, RockSortField } from "../api/resources/rocks";
 import type { TodoResponseDTO } from "../api/resources/todos";
 import type { IssueInterval, RockFutureScope, RockLevelCode, RockStatusCode } from "../api/types";
-import type NinetyPlugin from "../main";
+import type CommandPlugin from "../main";
 import type { QueryResult } from "../queries";
 import { resolveTeamListParam, resolveTeamParam } from "../teamResolution";
 import { resolveAssigneeFilterParam } from "../userResolution";
 import { normalizeOrderLower, normalizeOrderUpper, parseTriStateBool } from "../utils/blockParams";
 import { BlockParamError, teamResolutionFailedMessage } from "./blockErrors";
-import type { BlockContext } from "./renderNinetyBlock";
+import type { BlockContext } from "./renderCommandBlock";
 
 /** Scales the raw fetch size with the requested limit, so client-side filtering has enough rows to work with. */
 function bufferSize(limit: number, floor: number, cap: number): number {
@@ -27,7 +27,7 @@ function parseIntervalParam(value: string | undefined): IssueInterval | undefine
 }
 
 export async function resolveIssuesContext(
-	plugin: NinetyPlugin,
+	plugin: CommandPlugin,
 	params: Record<string, string>,
 ): Promise<IssuesBlockContext> {
 	const resolved = await resolveTeamListParam(plugin, params.team);
@@ -36,7 +36,7 @@ export async function resolveIssuesContext(
 }
 
 export async function queryIssuesForBlock(
-	plugin: NinetyPlugin,
+	plugin: CommandPlugin,
 	context: IssuesBlockContext,
 	limit: number,
 	params: Record<string, string>,
@@ -74,7 +74,7 @@ export interface TodosBlockContext extends BlockContext {
 }
 
 export async function resolveTodosContext(
-	plugin: NinetyPlugin,
+	plugin: CommandPlugin,
 	params: Record<string, string>,
 ): Promise<TodosBlockContext> {
 	if (parseTriStateBool(params.personal, undefined) === true) {
@@ -87,7 +87,7 @@ export async function resolveTodosContext(
 }
 
 export async function queryTodosForBlock(
-	plugin: NinetyPlugin,
+	plugin: CommandPlugin,
 	context: TodosBlockContext,
 	limit: number,
 	params: Record<string, string>,
@@ -169,7 +169,7 @@ function parseRockFutureScope(value: string | undefined): RockFutureScope | unde
 }
 
 export async function resolveRocksContext(
-	plugin: NinetyPlugin,
+	plugin: CommandPlugin,
 	params: Record<string, string>,
 ): Promise<RocksBlockContext> {
 	const resolved = await resolveTeamParam(plugin, params.team);
@@ -178,7 +178,7 @@ export async function resolveRocksContext(
 }
 
 export async function queryRocksForBlock(
-	plugin: NinetyPlugin,
+	plugin: CommandPlugin,
 	context: RocksBlockContext,
 	limit: number,
 	params: Record<string, string>,

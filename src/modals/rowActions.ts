@@ -1,5 +1,5 @@
 import { Notice } from "obsidian";
-import { describeApiError, NinetyApiError } from "../api/errors";
+import { describeApiError, CommandApiError } from "../api/errors";
 
 /**
  * Lifecycle helper for a plain row-level action button (complete/edit/delete),
@@ -11,7 +11,7 @@ export async function runRowAction(button: HTMLButtonElement, action: () => Prom
 	try {
 		await action();
 	} catch (err) {
-		const message = err instanceof NinetyApiError ? describeApiError(err) : "Ninety.io: action failed.";
+		const message = err instanceof CommandApiError ? describeApiError(err) : "Ninety Command: action failed.";
 		new Notice(message);
 	} finally {
 		button.disabled = false;

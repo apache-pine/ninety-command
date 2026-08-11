@@ -1,6 +1,6 @@
 import { type App, Modal, Notice, Setting } from "obsidian";
 import type { ScorecardKpiDTO, ScorecardPeriodDTO } from "../api/resources/scorecard";
-import type NinetyPlugin from "../main";
+import type CommandPlugin from "../main";
 import { formatKpiValue } from "../utils/kpiFormat";
 import { runSubmit } from "./formHelpers";
 
@@ -9,7 +9,7 @@ export class EnterScoreModal extends Modal {
 
 	constructor(
 		app: App,
-		private plugin: NinetyPlugin,
+		private plugin: CommandPlugin,
 		private kpi: ScorecardKpiDTO,
 		private period: ScorecardPeriodDTO,
 		private onSaved?: () => void,
@@ -22,15 +22,15 @@ export class EnterScoreModal extends Modal {
 	onOpen(): void {
 		const { contentEl } = this;
 		contentEl.createEl("h2", { text: `Enter score — ${this.kpi.title}` });
-		contentEl.createEl("p", { text: `Period: ${this.period.label}`, cls: "ninety-picker-sub" });
+		contentEl.createEl("p", { text: `Period: ${this.period.label}`, cls: "ninety-command-picker-sub" });
 		if (this.kpi.defaultGoal != null) {
 			contentEl.createEl("p", {
 				text: `Goal: ${formatKpiValue(this.kpi.defaultGoal, this.kpi.unit, this.kpi.currency)}`,
-				cls: "ninety-picker-sub",
+				cls: "ninety-command-picker-sub",
 			});
 		}
 		if (this.kpi.unit === "yesno") {
-			contentEl.createEl("p", { text: "Enter 1 for Yes, 0 for No.", cls: "ninety-picker-sub" });
+			contentEl.createEl("p", { text: "Enter 1 for Yes, 0 for No.", cls: "ninety-command-picker-sub" });
 		}
 
 		new Setting(contentEl).setName("Score").addText((text) => {
@@ -48,7 +48,7 @@ export class EnterScoreModal extends Modal {
 				.onClick(() => {
 					const parsed = Number(this.value);
 					if (this.value.trim() === "" || Number.isNaN(parsed)) {
-						new Notice("Ninety.io: enter a numeric score.");
+						new Notice("Ninety Command: enter a numeric score.");
 						return;
 					}
 
@@ -57,7 +57,7 @@ export class EnterScoreModal extends Modal {
 							value: parsed,
 							periodStartDate: this.period.periodStartDate,
 						});
-						new Notice(`Ninety.io: score saved for "${this.kpi.title}".`);
+						new Notice(`Ninety Command: score saved for "${this.kpi.title}".`);
 						this.onSaved?.();
 						this.close();
 					});

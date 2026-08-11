@@ -3,7 +3,7 @@ import type { IssueResponseDTO } from "../api/resources/issues";
 import type { RockResponseDTO } from "../api/resources/rocks";
 import type { TodoResponseDTO } from "../api/resources/todos";
 import { ensureUsersCache } from "../cache";
-import type NinetyPlugin from "../main";
+import type CommandPlugin from "../main";
 import { CreateIssueModal } from "../modals/CreateIssueModal";
 import { CreateRockModal } from "../modals/CreateRockModal";
 import { CreateTodoModal } from "../modals/CreateTodoModal";
@@ -12,34 +12,34 @@ import { queryActiveRocks, queryOpenIssues, queryOpenTodos } from "../queries";
 import { renderIssueRow, renderRockRow, renderTodoRow } from "../rendering";
 import { renderIssueRowActions, renderRockRowActions, renderTodoRowActions } from "../rowActionRenderers";
 import { getPrefillFromSelection } from "../utils/prefill";
-import { NinetyScorecardSection } from "./NinetyScorecardSection";
-import { NinetySection } from "./NinetySection";
+import { CommandScorecardSection } from "./CommandScorecardSection";
+import { CommandSection } from "./CommandSection";
 
-export const NINETY_VIEW_TYPE = "ninety-io-panel";
+export const COMMAND_VIEW_TYPE = "ninety-command-command-panel";
 
-export class NinetySidebarView extends ItemView {
+export class CommandSidebarView extends ItemView {
 	private gateEl!: HTMLElement;
 	private sectionsEl!: HTMLElement;
-	private issuesSection!: NinetySection<IssueResponseDTO>;
-	private todosSection!: NinetySection<TodoResponseDTO>;
-	private rocksSection!: NinetySection<RockResponseDTO>;
-	private scorecardSection!: NinetyScorecardSection;
+	private issuesSection!: CommandSection<IssueResponseDTO>;
+	private todosSection!: CommandSection<TodoResponseDTO>;
+	private rocksSection!: CommandSection<RockResponseDTO>;
+	private scorecardSection!: CommandScorecardSection;
 	/** Live, session-only override of the default assignee filter — resets to the persisted default on next open. */
 	private currentAssigneeFilter: string | null = null;
 
 	constructor(
 		leaf: WorkspaceLeaf,
-		private plugin: NinetyPlugin,
+		private plugin: CommandPlugin,
 	) {
 		super(leaf);
 	}
 
 	getViewType(): string {
-		return NINETY_VIEW_TYPE;
+		return COMMAND_VIEW_TYPE;
 	}
 
 	getDisplayText(): string {
-		return "Ninety.io";
+		return "Ninety Command";
 	}
 
 	getIcon(): IconName {
@@ -49,20 +49,20 @@ export class NinetySidebarView extends ItemView {
 	async onOpen(): Promise<void> {
 		const { contentEl } = this;
 		contentEl.empty();
-		contentEl.addClass("ninety-sidebar-view");
+		contentEl.addClass("ninety-command-sidebar-view");
 
 		this.addAction("refresh-cw", "Refresh", () => void this.refreshAll());
 
 		// Also a plain, always-visible button — the header action icon above can be
 		// easy to miss (or get crowded out) depending on how the pane is docked.
-		const toolbarEl = contentEl.createDiv({ cls: "ninety-panel-toolbar" });
-		const refreshBtn = toolbarEl.createEl("button", { text: "Refresh", cls: "ninety-button" });
+		const toolbarEl = contentEl.createDiv({ cls: "ninety-command-panel-toolbar" });
+		const refreshBtn = toolbarEl.createEl("button", { text: "Refresh", cls: "ninety-command-button" });
 		refreshBtn.addEventListener("click", () => void this.refreshAll());
 
 		this.currentAssigneeFilter = this.plugin.settings.defaultAssigneeUserId;
 
-		const filterEl = contentEl.createDiv({ cls: "ninety-panel-filter" });
-		filterEl.createSpan({ text: "Assignee: ", cls: "ninety-picker-sub" });
+		const filterEl = contentEl.createDiv({ cls: "ninety-command-panel-filter" });
+		filterEl.createSpan({ text: "Assignee: ", cls: "ninety-command-picker-sub" });
 		const assigneeDropdown = new DropdownComponent(filterEl);
 		assigneeDropdown.addOption("", "Everyone");
 		if (this.plugin.settings.defaultAssigneeUserId) {
@@ -80,10 +80,10 @@ export class NinetySidebarView extends ItemView {
 		});
 		void this.populateAssigneeDropdown(assigneeDropdown);
 
-		this.gateEl = contentEl.createEl("p", { cls: "ninety-panel-empty" });
+		this.gateEl = contentEl.createEl("p", { cls: "ninety-command-panel-empty" });
 		this.sectionsEl = contentEl.createDiv();
 
-		this.issuesSection = new NinetySection<IssueResponseDTO>({
+		this.issuesSection = new CommandSection<IssueResponseDTO>({
 			containerEl: this.sectionsEl,
 			title: "Issues",
 			addButtonLabel: "Create Issue",
@@ -104,7 +104,7 @@ export class NinetySidebarView extends ItemView {
 			emptyText: "No open Issues.",
 		});
 
-		this.todosSection = new NinetySection<TodoResponseDTO>({
+		this.todosSection = new CommandSection<TodoResponseDTO>({
 			containerEl: this.sectionsEl,
 			title: "To-Dos",
 			addButtonLabel: "Create To-Do",
@@ -124,7 +124,7 @@ export class NinetySidebarView extends ItemView {
 			emptyText: "No open To-Dos.",
 		});
 
-		this.rocksSection = new NinetySection<RockResponseDTO>({
+		this.rocksSection = new CommandSection<RockResponseDTO>({
 			containerEl: this.sectionsEl,
 			title: "Rocks",
 			addButtonLabel: "Create Rock",
@@ -144,7 +144,7 @@ export class NinetySidebarView extends ItemView {
 			emptyText: "No active Rocks.",
 		});
 
-		this.scorecardSection = new NinetyScorecardSection({
+		this.scorecardSection = new CommandScorecardSection({
 			containerEl: this.sectionsEl,
 			title: "Scorecard",
 			fetchFn: () => this.plugin.apiClient.scorecard.getTeamScorecard({ teamId: this.plugin.settings.defaultTeamId! }),
@@ -172,8 +172,8 @@ export class NinetySidebarView extends ItemView {
 			this.gateEl.show();
 			this.gateEl.setText(
 				!apiToken
-					? "Set an API token in Settings → Ninety.io."
-					: "Set a default team in Settings → Ninety.io.",
+					? "Set an API token in Settings → Ninety Command."
+					: "Set a default team in Settings → Ninety Command.",
 			);
 			return;
 		}

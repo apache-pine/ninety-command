@@ -1,11 +1,11 @@
-import type NinetyPlugin from "../main";
+import type CommandPlugin from "../main";
 import { renderRockRow } from "../rendering";
 import { renderRockRowActions } from "../rowActionRenderers";
 import { queryRocksForBlock, resolveRocksContext } from "./blockQueries";
-import { registerNinetyCodeBlock } from "./renderNinetyBlock";
+import { registerCommandCodeBlock } from "./renderCommandBlock";
 
-export function registerRocksCodeBlock(plugin: NinetyPlugin): void {
-	registerNinetyCodeBlock(plugin, {
+export function registerRocksCodeBlock(plugin: CommandPlugin): void {
+	registerCommandCodeBlock(plugin, {
 		language: "ninety-rocks",
 		resourceLabel: "Rocks",
 		emptyText: "No active Rocks.",

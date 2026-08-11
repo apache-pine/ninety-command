@@ -1,11 +1,11 @@
-import type NinetyPlugin from "../main";
+import type CommandPlugin from "../main";
 import { renderIssueRow } from "../rendering";
 import { renderIssueRowActions } from "../rowActionRenderers";
 import { queryIssuesForBlock, resolveIssuesContext } from "./blockQueries";
-import { registerNinetyCodeBlock } from "./renderNinetyBlock";
+import { registerCommandCodeBlock } from "./renderCommandBlock";
 
-export function registerIssuesCodeBlock(plugin: NinetyPlugin): void {
-	registerNinetyCodeBlock(plugin, {
+export function registerIssuesCodeBlock(plugin: CommandPlugin): void {
+	registerCommandCodeBlock(plugin, {
 		language: "ninety-issues",
 		resourceLabel: "Issues",
 		emptyText: "No open Issues.",

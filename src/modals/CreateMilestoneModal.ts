@@ -1,8 +1,8 @@
 import { type App, Modal, Notice, Setting } from "obsidian";
-import { describeApiError, NinetyApiError } from "../api/errors";
+import { describeApiError, CommandApiError } from "../api/errors";
 import type { RockResponseDTO } from "../api/resources/rocks";
 import { ensureTeamsCache } from "../cache";
-import type NinetyPlugin from "../main";
+import type CommandPlugin from "../main";
 import { dateInputToEndOfDayUtcIso } from "../utils/dates";
 import type { CapturePrefill } from "../utils/prefill";
 import { addDateField, runSubmit } from "./formHelpers";
@@ -14,7 +14,7 @@ export class CreateMilestoneModal extends Modal {
 
 	constructor(
 		app: App,
-		private plugin: NinetyPlugin,
+		private plugin: CommandPlugin,
 		private rock: RockResponseDTO,
 		prefill: CapturePrefill,
 	) {
@@ -26,7 +26,7 @@ export class CreateMilestoneModal extends Modal {
 	async onOpen(): Promise<void> {
 		const { contentEl } = this;
 		contentEl.createEl("h2", { text: "Add Milestone" });
-		const loadingEl = contentEl.createEl("p", { text: "Loading…", cls: "ninety-modal-loading" });
+		const loadingEl = contentEl.createEl("p", { text: "Loading…", cls: "ninety-command-modal-loading" });
 
 		try {
 			const teams = await ensureTeamsCache(this.plugin);
@@ -34,7 +34,7 @@ export class CreateMilestoneModal extends Modal {
 			loadingEl.remove();
 			this.renderForm(teamName);
 		} catch (err) {
-			const message = err instanceof NinetyApiError ? describeApiError(err) : "Ninety.io: failed to load.";
+			const message = err instanceof CommandApiError ? describeApiError(err) : "Ninety Command: failed to load.";
 			loadingEl.setText(message);
 		}
 	}
@@ -67,11 +67,11 @@ export class CreateMilestoneModal extends Modal {
 				.setCta()
 				.onClick(() => {
 					if (!this.title.trim()) {
-						new Notice("Ninety.io: enter a title.");
+						new Notice("Ninety Command: enter a title.");
 						return;
 					}
 					if (!this.dueDate) {
-						new Notice("Ninety.io: select a due date.");
+						new Notice("Ninety Command: select a due date.");
 						return;
 					}
 
@@ -83,7 +83,7 @@ export class CreateMilestoneModal extends Modal {
 							description: this.description || undefined,
 							dueDate: dateInputToEndOfDayUtcIso(this.dueDate),
 						});
-						new Notice(`Ninety.io: Milestone "${created.title}" added to "${this.rock.title}".`);
+						new Notice(`Ninety Command: Milestone "${created.title}" added to "${this.rock.title}".`);
 						this.close();
 					});
 				});

@@ -1,11 +1,11 @@
 import { type App, Modal, Notice, Setting } from "obsidian";
-import { describeApiError, NinetyApiError } from "../api/errors";
+import { describeApiError, CommandApiError } from "../api/errors";
 import type { RockResponseDTO } from "../api/resources/rocks";
 import type { AvailableTeamResponseDTO } from "../api/resources/teams";
 import type { RockLevelCode, RockQuarter, RockStatusCode } from "../api/types";
 import type { CompanyUserResponseDTO } from "../api/resources/users";
 import { ensureTeamsCache, ensureUsersCache } from "../cache";
-import type NinetyPlugin from "../main";
+import type CommandPlugin from "../main";
 import { dateInputToEndOfDayUtcIso, getCalendarQuarter } from "../utils/dates";
 import type { CapturePrefill } from "../utils/prefill";
 import { addDateField, addTeamDropdown, addUserDropdown, runSubmit } from "./formHelpers";
@@ -45,7 +45,7 @@ export class CreateRockModal extends Modal {
 
 	constructor(
 		app: App,
-		private plugin: NinetyPlugin,
+		private plugin: CommandPlugin,
 		private modeOpts: RockModalMode,
 		private onSaved?: () => void,
 	) {
@@ -73,8 +73,8 @@ export class CreateRockModal extends Modal {
 	async onOpen(): Promise<void> {
 		const { contentEl } = this;
 		const isEdit = this.modeOpts.mode === "edit";
-		contentEl.createEl("h2", { text: isEdit ? "Edit Ninety Rock" : "Create Ninety Rock" });
-		const loadingEl = contentEl.createEl("p", { text: "Loading teams…", cls: "ninety-modal-loading" });
+		contentEl.createEl("h2", { text: isEdit ? "Edit Rock" : "Create Rock" });
+		const loadingEl = contentEl.createEl("p", { text: "Loading teams…", cls: "ninety-command-modal-loading" });
 
 		try {
 			// Only edit mode shows an Owner dropdown (create derives the owner from the
@@ -86,7 +86,7 @@ export class CreateRockModal extends Modal {
 			loadingEl.remove();
 			this.renderForm(teams, users);
 		} catch (err) {
-			const message = err instanceof NinetyApiError ? describeApiError(err) : "Ninety.io: failed to load teams.";
+			const message = err instanceof CommandApiError ? describeApiError(err) : "Ninety Command: failed to load teams.";
 			loadingEl.setText(message);
 		}
 	}
@@ -163,15 +163,15 @@ export class CreateRockModal extends Modal {
 				.setCta()
 				.onClick(() => {
 					if (!this.title.trim()) {
-						new Notice("Ninety.io: enter a title.");
+						new Notice("Ninety Command: enter a title.");
 						return;
 					}
 					if (!this.teamId) {
-						new Notice("Ninety.io: select a team.");
+						new Notice("Ninety Command: select a team.");
 						return;
 					}
 					if (!this.dueDate) {
-						new Notice("Ninety.io: select a due date.");
+						new Notice("Ninety Command: select a due date.");
 						return;
 					}
 
@@ -187,7 +187,7 @@ export class CreateRockModal extends Modal {
 								description: this.description || undefined,
 								userId: this.userId || undefined,
 							});
-							new Notice(`Ninety.io: Rock "${updated.title}" updated.`);
+							new Notice(`Ninety Command: Rock "${updated.title}" updated.`);
 							this.onSaved?.();
 							this.close();
 							return;
@@ -208,12 +208,12 @@ export class CreateRockModal extends Modal {
 
 						const rock = created[0];
 						if (!rock) {
-							new Notice("Ninety.io: Rock created, but the response was empty — check Ninety.io to confirm.");
+							new Notice("Ninety Command: Rock created, but the response was empty — check Ninety.io to confirm.");
 							this.close();
 							return;
 						}
 
-						new Notice(`Ninety.io: Rock "${rock.title}" created.`);
+						new Notice(`Ninety Command: Rock "${rock.title}" created.`);
 						this.onSaved?.();
 						this.close();
 					});

@@ -1,4 +1,4 @@
-import type { NinetyApiClient } from "../client";
+import type { CommandApiClient } from "../client";
 import type { AscDescSortDirectionLower, PaginatedResponse } from "../types";
 
 export interface TodoResponseDTO {
@@ -69,7 +69,7 @@ export interface TodosResource {
 	delete(id: string): Promise<void>;
 }
 
-export function createTodosResource(client: NinetyApiClient): TodosResource {
+export function createTodosResource(client: CommandApiClient): TodosResource {
 	return {
 		create: (data) =>
 			client.request<TodoResponseDTO>({ method: "POST", path: "/todos", body: data }),

@@ -7,13 +7,13 @@ import { CreateIssueModal } from "./modals/CreateIssueModal";
 import { CreateRockModal } from "./modals/CreateRockModal";
 import { CreateTodoModal } from "./modals/CreateTodoModal";
 import { runRowAction } from "./modals/rowActions";
-import type NinetyPlugin from "./main";
+import type CommandPlugin from "./main";
 
 /**
  * Shared complete/edit/delete row-action builders, used by both the sidebar
  * panel (always) and code blocks (opt-in via an `interactive: true` param).
  * `onChanged` is called after a successful complete/delete so the caller can
- * re-render whatever list the row came from (a NinetySection.refresh() for
+ * re-render whatever list the row came from (a CommandSection.refresh() for
  * the sidebar, or the block's own render() for code blocks).
  */
 
@@ -24,7 +24,7 @@ function addRowActionButton(actionsEl: HTMLElement, icon: string, label: string)
 }
 
 export function renderIssueRowActions(
-	plugin: NinetyPlugin,
+	plugin: CommandPlugin,
 	issue: IssueResponseDTO,
 	actionsEl: HTMLElement,
 	onChanged: () => void,
@@ -33,7 +33,7 @@ export function renderIssueRowActions(
 	completeBtn.addEventListener("click", () => {
 		void runRowAction(completeBtn, async () => {
 			await plugin.apiClient.issues.update(issue._id, { completed: true });
-			new Notice(`Ninety.io: Issue "${issue.title}" completed.`);
+			new Notice(`Ninety Command: Issue "${issue.title}" completed.`);
 			onChanged();
 		});
 	});
@@ -50,7 +50,7 @@ export function renderIssueRowActions(
 			if (!confirmed) return;
 			void runRowAction(deleteBtn, async () => {
 				await plugin.apiClient.issues.delete(issue._id);
-				new Notice(`Ninety.io: Issue "${issue.title}" deleted.`);
+				new Notice(`Ninety Command: Issue "${issue.title}" deleted.`);
 				onChanged();
 			});
 		})();
@@ -58,7 +58,7 @@ export function renderIssueRowActions(
 }
 
 export function renderTodoRowActions(
-	plugin: NinetyPlugin,
+	plugin: CommandPlugin,
 	todo: TodoResponseDTO,
 	actionsEl: HTMLElement,
 	onChanged: () => void,
@@ -67,7 +67,7 @@ export function renderTodoRowActions(
 	completeBtn.addEventListener("click", () => {
 		void runRowAction(completeBtn, async () => {
 			await plugin.apiClient.todos.update(todo._id, { completed: true });
-			new Notice(`Ninety.io: To-Do "${todo.title}" completed.`);
+			new Notice(`Ninety Command: To-Do "${todo.title}" completed.`);
 			onChanged();
 		});
 	});
@@ -84,7 +84,7 @@ export function renderTodoRowActions(
 			if (!confirmed) return;
 			void runRowAction(deleteBtn, async () => {
 				await plugin.apiClient.todos.delete(todo._id);
-				new Notice(`Ninety.io: To-Do "${todo.title}" deleted.`);
+				new Notice(`Ninety Command: To-Do "${todo.title}" deleted.`);
 				onChanged();
 			});
 		})();
@@ -92,7 +92,7 @@ export function renderTodoRowActions(
 }
 
 export function renderRockRowActions(
-	plugin: NinetyPlugin,
+	plugin: CommandPlugin,
 	rock: RockResponseDTO,
 	actionsEl: HTMLElement,
 	onChanged: () => void,
@@ -101,7 +101,7 @@ export function renderRockRowActions(
 	completeBtn.addEventListener("click", () => {
 		void runRowAction(completeBtn, async () => {
 			await plugin.apiClient.rocks.update(rock._id, { statusCode: "DONE" });
-			new Notice(`Ninety.io: Rock "${rock.title}" marked done.`);
+			new Notice(`Ninety Command: Rock "${rock.title}" marked done.`);
 			onChanged();
 		});
 	});
@@ -118,7 +118,7 @@ export function renderRockRowActions(
 			if (!confirmed) return;
 			void runRowAction(deleteBtn, async () => {
 				await plugin.apiClient.rocks.delete(rock._id);
-				new Notice(`Ninety.io: Rock "${rock.title}" deleted.`);
+				new Notice(`Ninety Command: Rock "${rock.title}" deleted.`);
 				onChanged();
 			});
 		})();

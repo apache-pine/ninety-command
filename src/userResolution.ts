@@ -2,7 +2,7 @@ import { BlockParamError, userNotFoundMessage } from "./codeBlocks/blockErrors";
 import { OBJECT_ID_PATTERN } from "./teamResolution";
 import { ensureUsersCache } from "./cache";
 import { pickFirstPresentParam } from "./utils/blockParams";
-import type NinetyPlugin from "./main";
+import type CommandPlugin from "./main";
 import type { CompanyUserResponseDTO } from "./api/resources/users";
 
 export interface ResolvedUser {
@@ -43,13 +43,13 @@ function matchUserSegment(users: CompanyUserResponseDTO[], segment: string): Res
  * Takes a REQUIRED non-empty string — presence is checked by the caller — so
  * `null` unambiguously means "didn't resolve to anyone."
  */
-export async function resolveUserParam(plugin: NinetyPlugin, value: string): Promise<ResolvedUser | null> {
+export async function resolveUserParam(plugin: CommandPlugin, value: string): Promise<ResolvedUser | null> {
 	const users = await ensureUsersCache(plugin);
 	return matchUserSegment(users, value);
 }
 
 /** Comma-separated variant of resolveUserParam. Fails all-or-nothing, like resolveTeamListParam. */
-export async function resolveUserListParam(plugin: NinetyPlugin, value: string): Promise<ResolvedUserList | null> {
+export async function resolveUserListParam(plugin: CommandPlugin, value: string): Promise<ResolvedUserList | null> {
 	const users = await ensureUsersCache(plugin);
 	const segments = value
 		.split(",")
@@ -78,7 +78,7 @@ export async function resolveUserListParam(plugin: NinetyPlugin, value: string):
  * value doesn't resolve to anyone.
  */
 export async function resolveAssigneeFilterParam(
-	plugin: NinetyPlugin,
+	plugin: CommandPlugin,
 	params: Record<string, string>,
 ): Promise<string[] | null> {
 	const listValue = pickFirstPresentParam(params, "assignees", "owners");

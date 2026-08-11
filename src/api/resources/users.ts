@@ -1,4 +1,4 @@
-import type { NinetyApiClient } from "../client";
+import type { CommandApiClient } from "../client";
 
 export interface CompanyUserResponseDTO {
 	id: string;
@@ -23,7 +23,7 @@ export interface UsersResource {
 	get(id: string): Promise<UserResponseDTO>;
 }
 
-export function createUsersResource(client: NinetyApiClient): UsersResource {
+export function createUsersResource(client: CommandApiClient): UsersResource {
 	return {
 		listForCompany: (includeInactive) =>
 			client.request<CompanyUserResponseDTO[]>({

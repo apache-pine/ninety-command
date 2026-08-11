@@ -39,7 +39,7 @@ export class RockPickerModal extends FuzzySuggestModal<RockResponseDTO> {
 		const teamName = this.teamNameById.get(rock.teamId) ?? "Unknown team";
 		el.createDiv({
 			text: `${teamName} · ${rock.statusCode} · ${rock.quarter}`,
-			cls: "ninety-picker-sub",
+			cls: "ninety-command-picker-sub",
 		});
 	}
 

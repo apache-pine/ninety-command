@@ -1,6 +1,6 @@
 import type { AvailableTeamResponseDTO } from "./api/resources/teams";
 import { ensureTeamsCache } from "./cache";
-import type NinetyPlugin from "./main";
+import type CommandPlugin from "./main";
 
 export const OBJECT_ID_PATTERN = /^[0-9a-f]{24}$/i;
 
@@ -43,10 +43,10 @@ export function matchTeamSegment(teams: AvailableTeamResponseDTO[], segment: str
  *   2. Param given → matched via matchTeamSegment against the cached team
  *      list (lazily populated if empty).
  *   3. Otherwise → null (unresolved).
- * NinetyApiError from a lazy cache fetch propagates to the caller — "can't
+ * CommandApiError from a lazy cache fetch propagates to the caller — "can't
  * even list teams" and "team name not found" are different failure modes.
  */
-export async function resolveTeamParam(plugin: NinetyPlugin, teamParam?: string): Promise<ResolvedTeam | null> {
+export async function resolveTeamParam(plugin: CommandPlugin, teamParam?: string): Promise<ResolvedTeam | null> {
 	const trimmed = teamParam?.trim();
 
 	if (!trimmed) {
@@ -66,7 +66,7 @@ export async function resolveTeamParam(plugin: NinetyPlugin, teamParam?: string)
  * segment doesn't match, the whole param is treated as unresolved (a typo in
  * a 2-team list shouldn't silently drop to 1 team).
  */
-export async function resolveTeamListParam(plugin: NinetyPlugin, teamParam?: string): Promise<ResolvedTeamList | null> {
+export async function resolveTeamListParam(plugin: CommandPlugin, teamParam?: string): Promise<ResolvedTeamList | null> {
 	const trimmed = teamParam?.trim();
 
 	if (!trimmed) {

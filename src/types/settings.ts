@@ -1,7 +1,7 @@
 import type { AvailableTeamResponseDTO } from "../api/resources/teams";
 import type { CompanyUserResponseDTO } from "../api/resources/users";
 
-export interface NinetySettings {
+export interface CommandSettings {
 	/** Personal Access Token, stored in plaintext in data.json (an Obsidian community-plugin limitation). */
 	apiToken: string;
 	defaultTeamId: string | null;
@@ -21,7 +21,7 @@ export interface NinetySettings {
 	defaultAssigneeUserName: string | null;
 }
 
-export const DEFAULT_SETTINGS: NinetySettings = {
+export const DEFAULT_SETTINGS: CommandSettings = {
 	apiToken: "",
 	defaultTeamId: null,
 	defaultTeamName: null,

@@ -1,4 +1,4 @@
-import type { NinetyApiClient } from "../client";
+import type { CommandApiClient } from "../client";
 
 export interface TeamResponseDTO {
 	_id: string;
@@ -19,7 +19,7 @@ export interface TeamsResource {
 	available(): Promise<AvailableTeamResponseDTO[]>;
 }
 
-export function createTeamsResource(client: NinetyApiClient): TeamsResource {
+export function createTeamsResource(client: CommandApiClient): TeamsResource {
 	return {
 		list: () => client.request<TeamResponseDTO[]>({ method: "GET", path: "/teams" }),
 		available: () =>

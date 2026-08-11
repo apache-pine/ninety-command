@@ -1,4 +1,4 @@
-import { describeApiError, NinetyApiError } from "../api/errors";
+import { describeApiError, CommandApiError } from "../api/errors";
 
 export interface SectionFetchResult<T> {
 	items: T[];
@@ -6,7 +6,7 @@ export interface SectionFetchResult<T> {
 	moreAvailable: boolean;
 }
 
-export interface NinetySectionOptions<T> {
+export interface CommandSectionOptions<T> {
 	containerEl: HTMLElement;
 	title: string;
 	addButtonLabel: string;
@@ -23,13 +23,13 @@ export interface NinetySectionOptions<T> {
  * Issues/To-Dos/Rocks sections of the sidebar panel. Renders when told to via
  * refresh() — no internal caching or auto-refresh.
  */
-export class NinetySection<T> {
+export class CommandSection<T> {
 	private listEl: HTMLElement;
 
-	constructor(private opts: NinetySectionOptions<T>) {
-		const sectionEl = opts.containerEl.createDiv({ cls: "ninety-section" });
+	constructor(private opts: CommandSectionOptions<T>) {
+		const sectionEl = opts.containerEl.createDiv({ cls: "ninety-command-section" });
 
-		const headerEl = sectionEl.createDiv({ cls: "ninety-section-header" });
+		const headerEl = sectionEl.createDiv({ cls: "ninety-command-section-header" });
 		headerEl.createSpan({ text: opts.title });
 		const addBtn = headerEl.createEl("button", {
 			text: "+",
@@ -38,38 +38,38 @@ export class NinetySection<T> {
 		});
 		addBtn.addEventListener("click", () => opts.onAddClick());
 
-		this.listEl = sectionEl.createDiv({ cls: "ninety-section-list" });
+		this.listEl = sectionEl.createDiv({ cls: "ninety-command-section-list" });
 	}
 
 	async refresh(): Promise<void> {
 		this.listEl.empty();
-		this.listEl.createEl("p", { text: "Loading…", cls: "ninety-modal-loading" });
+		this.listEl.createEl("p", { text: "Loading…", cls: "ninety-command-modal-loading" });
 
 		try {
 			const result = await this.opts.fetchFn();
 			this.listEl.empty();
 
 			if (result.items.length === 0) {
-				this.listEl.createEl("p", { text: this.opts.emptyText, cls: "ninety-panel-empty" });
+				this.listEl.createEl("p", { text: this.opts.emptyText, cls: "ninety-command-panel-empty" });
 				return;
 			}
 
 			for (const item of result.items) {
-				const rowEl = this.listEl.createDiv({ cls: "ninety-item" });
+				const rowEl = this.listEl.createDiv({ cls: "ninety-command-item" });
 				this.opts.renderItem(item, rowEl);
 				if (this.opts.renderActions) {
-					const actionsEl = rowEl.createDiv({ cls: "ninety-item-actions" });
+					const actionsEl = rowEl.createDiv({ cls: "ninety-command-item-actions" });
 					this.opts.renderActions(item, actionsEl);
 				}
 			}
 
 			if (result.moreAvailable) {
-				this.listEl.createEl("p", { text: "…and more", cls: "ninety-section-more" });
+				this.listEl.createEl("p", { text: "…and more", cls: "ninety-command-section-more" });
 			}
 		} catch (err) {
 			this.listEl.empty();
-			const message = err instanceof NinetyApiError ? describeApiError(err) : "Ninety.io: failed to load.";
-			this.listEl.createEl("p", { text: message, cls: "ninety-panel-empty" });
+			const message = err instanceof CommandApiError ? describeApiError(err) : "Ninety Command: failed to load.";
+			this.listEl.createEl("p", { text: message, cls: "ninety-command-panel-empty" });
 		}
 	}
 }

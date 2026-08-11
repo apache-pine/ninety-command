@@ -1,4 +1,4 @@
-import type { NinetyApiClient } from "../client";
+import type { CommandApiClient } from "../client";
 import type { AscDescSortDirection, IssueInterval, PaginatedResponse } from "../types";
 
 export interface IssueResponseDTO {
@@ -64,7 +64,7 @@ export interface IssuesResource {
 	create(data: CreatePublicIssueDTO): Promise<IssueResponseDTO>;
 }
 
-export function createIssuesResource(client: NinetyApiClient): IssuesResource {
+export function createIssuesResource(client: CommandApiClient): IssuesResource {
 	return {
 		query: (params) =>
 			client.request<PaginatedIssuesResponseDTO>({

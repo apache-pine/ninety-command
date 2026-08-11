@@ -1,5 +1,5 @@
 import { type ButtonComponent, Notice, type Setting } from "obsidian";
-import { describeApiError, NinetyApiError } from "../api/errors";
+import { describeApiError, CommandApiError } from "../api/errors";
 import type { AvailableTeamResponseDTO } from "../api/resources/teams";
 import type { CompanyUserResponseDTO } from "../api/resources/users";
 
@@ -81,7 +81,7 @@ export async function runSubmit(button: ButtonComponent, busyLabel: string, acti
 	try {
 		await action();
 	} catch (err) {
-		const message = err instanceof NinetyApiError ? describeApiError(err) : "Ninety.io: request failed.";
+		const message = err instanceof CommandApiError ? describeApiError(err) : "Ninety Command: request failed.";
 		new Notice(message);
 	} finally {
 		button.setDisabled(false).setButtonText(originalLabel);

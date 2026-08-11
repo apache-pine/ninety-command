@@ -1,9 +1,9 @@
 {
-	"id": "ninety-io",
-	"name": "Ninety.io",
-	"version": "0.1.0",
+	"id": "ninety-command",
+	"name": "Ninety Command",
+	"version": "1.0.0",
 	"minAppVersion": "1.8.0",
-	"description": "Connect to Ninety.io (Issues, To-Dos, Rocks, Milestones) from within Obsidian.",
+	"description": "Create, track, and manage your Ninety.io Issues, To-Dos, Rocks, Milestones, and Scorecard from within Obsidian.",
 	"author": "Kylar Sorensen",
 	"isDesktopOnly": false
 }

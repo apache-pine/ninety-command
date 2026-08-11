@@ -1,4 +1,4 @@
-import type { NinetyApiClient } from "../client";
+import type { CommandApiClient } from "../client";
 
 export interface MilestoneResponseDTO {
 	_id: string;
@@ -49,7 +49,7 @@ export interface MilestonesResource {
 	create(data: CreateMilestoneDTO): Promise<MilestoneResponseDTO>;
 }
 
-export function createMilestonesResource(client: NinetyApiClient): MilestonesResource {
+export function createMilestonesResource(client: CommandApiClient): MilestonesResource {
 	return {
 		get: (id) => client.request<MilestoneResponseDTO>({ method: "GET", path: `/milestones/${id}` }),
 		update: (id, data) =>

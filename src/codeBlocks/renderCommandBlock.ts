@@ -5,8 +5,8 @@ import {
 	setIcon,
 	TFile,
 } from "obsidian";
-import { describeApiError, NinetyApiError } from "../api/errors";
-import type NinetyPlugin from "../main";
+import { describeApiError, CommandApiError } from "../api/errors";
+import type CommandPlugin from "../main";
 import type { QueryResult } from "../queries";
 import { parseBlockParams, parseTriStateBool } from "../utils/blockParams";
 import { BlockParamError } from "./blockErrors";
@@ -16,24 +16,24 @@ export interface BlockContext {
 	label: string;
 }
 
-export interface NinetyBlockConfig<T, TContext extends BlockContext = BlockContext> {
+export interface CommandBlockConfig<T, TContext extends BlockContext = BlockContext> {
 	language: string;
 	resourceLabel: string;
 	emptyText: string;
 	renderRow: (item: T, rowEl: HTMLElement) => void;
 	/** Resolves whatever this resource needs (team id(s), personal-mode, etc.) from params. Throws BlockParamError on failure. */
-	resolveContext: (plugin: NinetyPlugin, params: Record<string, string>) => Promise<TContext>;
-	fetch: (plugin: NinetyPlugin, context: TContext, limit: number, params: Record<string, string>) => Promise<QueryResult<T>>;
+	resolveContext: (plugin: CommandPlugin, params: Record<string, string>) => Promise<TContext>;
+	fetch: (plugin: CommandPlugin, context: TContext, limit: number, params: Record<string, string>) => Promise<QueryResult<T>>;
 	/** Only called when the block sets `interactive: true` — adds complete/edit/delete buttons to each row. */
-	renderActions?: (plugin: NinetyPlugin, item: T, actionsEl: HTMLElement, onChanged: () => void) => void;
+	renderActions?: (plugin: CommandPlugin, item: T, actionsEl: HTMLElement, onChanged: () => void) => void;
 }
 
-export function registerNinetyCodeBlock<T, TContext extends BlockContext>(
-	plugin: NinetyPlugin,
-	config: NinetyBlockConfig<T, TContext>,
+export function registerCommandCodeBlock<T, TContext extends BlockContext>(
+	plugin: CommandPlugin,
+	config: CommandBlockConfig<T, TContext>,
 ): void {
 	plugin.registerMarkdownCodeBlockProcessor(config.language, (source, el, ctx) => {
-		ctx.addChild(new NinetyBlockRenderChild(el, plugin, config, source, ctx));
+		ctx.addChild(new CommandBlockRenderChild(el, plugin, config, source, ctx));
 	});
 }
 
@@ -42,14 +42,14 @@ function parseLimitParam(value: string | undefined, defaultValue: number): numbe
 	return Number.isFinite(n) && n > 0 ? n : defaultValue;
 }
 
-class NinetyBlockRenderChild<T, TContext extends BlockContext> extends MarkdownRenderChild {
+class CommandBlockRenderChild<T, TContext extends BlockContext> extends MarkdownRenderChild {
 	private titleEl!: HTMLElement;
 	private listEl!: HTMLElement;
 
 	constructor(
 		containerEl: HTMLElement,
-		private plugin: NinetyPlugin,
-		private config: NinetyBlockConfig<T, TContext>,
+		private plugin: CommandPlugin,
+		private config: CommandBlockConfig<T, TContext>,
 		private source: string,
 		private ctx: MarkdownPostProcessorContext,
 	) {
@@ -57,12 +57,12 @@ class NinetyBlockRenderChild<T, TContext extends BlockContext> extends MarkdownR
 	}
 
 	onload(): void {
-		const wrapper = this.containerEl.createDiv({ cls: "ninety-codeblock" });
+		const wrapper = this.containerEl.createDiv({ cls: "ninety-command-codeblock" });
 
-		const headerEl = wrapper.createDiv({ cls: "ninety-codeblock-header" });
-		this.titleEl = headerEl.createSpan({ cls: "ninety-codeblock-title", text: this.config.resourceLabel });
+		const headerEl = wrapper.createDiv({ cls: "ninety-command-codeblock-header" });
+		this.titleEl = headerEl.createSpan({ cls: "ninety-command-codeblock-title", text: this.config.resourceLabel });
 
-		const actionsEl = headerEl.createDiv({ cls: "ninety-codeblock-actions" });
+		const actionsEl = headerEl.createDiv({ cls: "ninety-command-codeblock-actions" });
 
 		const refreshBtn = actionsEl.createEl("button", { cls: "clickable-icon", attr: { "aria-label": "Refresh" } });
 		setIcon(refreshBtn, "refresh-cw");
@@ -75,14 +75,14 @@ class NinetyBlockRenderChild<T, TContext extends BlockContext> extends MarkdownR
 		setIcon(editBtn, "code");
 		editBtn.addEventListener("click", () => void this.openInEditor());
 
-		this.listEl = wrapper.createDiv({ cls: "ninety-section-list" });
+		this.listEl = wrapper.createDiv({ cls: "ninety-command-section-list" });
 
 		void this.render();
 	}
 
 	private async render(): Promise<void> {
 		this.listEl.empty();
-		this.listEl.createEl("p", { text: "Loading…", cls: "ninety-modal-loading" });
+		this.listEl.createEl("p", { text: "Loading…", cls: "ninety-command-modal-loading" });
 
 		const params = parseBlockParams(this.source);
 
@@ -99,39 +99,39 @@ class NinetyBlockRenderChild<T, TContext extends BlockContext> extends MarkdownR
 			this.listEl.empty();
 
 			if (result.items.length === 0) {
-				this.listEl.createEl("p", { text: this.config.emptyText, cls: "ninety-panel-empty" });
+				this.listEl.createEl("p", { text: this.config.emptyText, cls: "ninety-command-panel-empty" });
 				return;
 			}
 
 			const interactive = parseTriStateBool(params.interactive, false) === true;
 
 			for (const item of result.items) {
-				const rowEl = this.listEl.createDiv({ cls: "ninety-item" });
+				const rowEl = this.listEl.createDiv({ cls: "ninety-command-item" });
 				this.config.renderRow(item, rowEl);
 				if (interactive && this.config.renderActions) {
-					const actionsEl = rowEl.createDiv({ cls: "ninety-item-actions" });
+					const actionsEl = rowEl.createDiv({ cls: "ninety-command-item-actions" });
 					this.config.renderActions(this.plugin, item, actionsEl, () => void this.render());
 				}
 			}
 
 			if (result.moreAvailable) {
-				this.listEl.createEl("p", { text: "…and more", cls: "ninety-section-more" });
+				this.listEl.createEl("p", { text: "…and more", cls: "ninety-command-section-more" });
 			}
 		} catch (err) {
 			if (!this.containerEl.isConnected) return;
 			const message =
-				err instanceof NinetyApiError
+				err instanceof CommandApiError
 					? describeApiError(err)
 					: err instanceof BlockParamError
 						? err.message
-						: "Ninety.io: failed to load.";
+						: "Ninety Command: failed to load.";
 			this.renderMessage(message);
 		}
 	}
 
 	private renderMessage(message: string): void {
 		this.listEl.empty();
-		this.listEl.createEl("p", { text: message, cls: "ninety-panel-empty" });
+		this.listEl.createEl("p", { text: message, cls: "ninety-command-panel-empty" });
 	}
 
 	/**

@@ -1,5 +1,5 @@
 import { type App, Notice, PluginSettingTab, Setting } from "obsidian";
-import { describeApiError, NinetyApiError } from "./api/errors";
+import { describeApiError, CommandApiError } from "./api/errors";
 import { fetchAndCacheAll, fetchAndCacheTeams } from "./cache";
 import {
 	ISSUES_PARAM_REFERENCE,
@@ -7,7 +7,7 @@ import {
 	ROCKS_PARAM_REFERENCE,
 	TODOS_PARAM_REFERENCE,
 } from "./codeBlocks/paramReference";
-import type NinetyPlugin from "./main";
+import type CommandPlugin from "./main";
 
 type ConnectionStatus =
 	| { state: "idle" }
@@ -15,12 +15,12 @@ type ConnectionStatus =
 	| { state: "success" }
 	| { state: "error"; message: string };
 
-export class NinetySettingTab extends PluginSettingTab {
-	private plugin: NinetyPlugin;
+export class CommandSettingTab extends PluginSettingTab {
+	private plugin: CommandPlugin;
 	private connectionStatus: ConnectionStatus = { state: "idle" };
 	private isRefreshingCache = false;
 
-	constructor(app: App, plugin: NinetyPlugin) {
+	constructor(app: App, plugin: CommandPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
@@ -29,7 +29,7 @@ export class NinetySettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		containerEl.createEl("h2", { text: "Ninety.io" });
+		containerEl.createEl("h2", { text: "Ninety Command" });
 
 		this.renderTokenSetting(containerEl);
 		this.renderConnectionStatusEl(containerEl);
@@ -73,7 +73,7 @@ export class NinetySettingTab extends PluginSettingTab {
 			return;
 		}
 
-		const el = containerEl.createDiv({ cls: "ninety-connection-status" });
+		const el = containerEl.createDiv({ cls: "ninety-command-connection-status" });
 		if (status.state === "pending") {
 			el.addClass("is-pending");
 			el.setText("Testing connection…");
@@ -93,7 +93,7 @@ export class NinetySettingTab extends PluginSettingTab {
 			.addButton((btn) => {
 				btn.setButtonText("Test Connection").onClick(async () => {
 					if (!this.plugin.settings.apiToken) {
-						new Notice("Ninety.io: enter an API token first.");
+						new Notice("Ninety Command: enter an API token first.");
 						return;
 					}
 
@@ -106,12 +106,12 @@ export class NinetySettingTab extends PluginSettingTab {
 						await fetchAndCacheTeams(this.plugin);
 
 						this.connectionStatus = { state: "success" };
-						new Notice("Ninety.io: connection successful.");
+						new Notice("Ninety Command: connection successful.");
 					} catch (err) {
 						const message =
-							err instanceof NinetyApiError
+							err instanceof CommandApiError
 								? describeApiError(err)
-								: "Ninety.io: connection failed.";
+								: "Ninety Command: connection failed.";
 						this.connectionStatus = { state: "error", message };
 						new Notice(message);
 					}
@@ -204,7 +204,7 @@ export class NinetySettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Auto-refresh panel")
-			.setDesc("Automatically refresh the Ninety.io sidebar panel while it's open.")
+			.setDesc("Automatically refresh the Ninety Command sidebar panel while it's open.")
 			.addDropdown((dropdown) => {
 				for (const [value, label] of options) {
 					dropdown.addOption(value, label);
@@ -230,7 +230,7 @@ export class NinetySettingTab extends PluginSettingTab {
 					.setDisabled(this.isRefreshingCache)
 					.onClick(async () => {
 						if (!this.plugin.settings.apiToken) {
-							new Notice("Ninety.io: enter an API token first.");
+							new Notice("Ninety Command: enter an API token first.");
 							return;
 						}
 
@@ -240,12 +240,12 @@ export class NinetySettingTab extends PluginSettingTab {
 						try {
 							await Promise.all([this.plugin.apiClient.teams.list(), fetchAndCacheAll(this.plugin)]);
 
-							new Notice("Ninety.io: cached data refreshed.");
+							new Notice("Ninety Command: cached data refreshed.");
 						} catch (err) {
 							const message =
-								err instanceof NinetyApiError
+								err instanceof CommandApiError
 									? describeApiError(err)
-									: "Ninety.io: refresh failed.";
+									: "Ninety Command: refresh failed.";
 							new Notice(message);
 						} finally {
 							this.isRefreshingCache = false;
@@ -275,7 +275,7 @@ export class NinetySettingTab extends PluginSettingTab {
 	}
 
 	private renderNinetyLink(containerEl: HTMLElement): void {
-		const p = containerEl.createEl("p", { cls: "ninety-picker-sub" });
+		const p = containerEl.createEl("p", { cls: "ninety-command-picker-sub" });
 		p.createEl("a", {
 			text: "Open app.ninety.io ↗",
 			href: "https://app.ninety.io",
@@ -284,11 +284,11 @@ export class NinetySettingTab extends PluginSettingTab {
 	}
 
 	private renderParamReferenceSetting(containerEl: HTMLElement): void {
-		const details = containerEl.createEl("details", { cls: "ninety-param-reference" });
+		const details = containerEl.createEl("details", { cls: "ninety-command-param-reference" });
 		details.createEl("summary", { text: "Code block parameter reference" });
 
 		details.createEl("p", {
-			cls: "ninety-picker-sub",
+			cls: "ninety-command-picker-sub",
 			text: "Each line inside a code block is a key: value pair. Unrecognized keys are ignored.",
 		});
 
@@ -300,7 +300,7 @@ export class NinetySettingTab extends PluginSettingTab {
 	private renderParamSection(container: HTMLElement, language: string, rows: ParamReferenceRow[]): void {
 		container.createEl("h4").createEl("code", { text: language });
 
-		const table = container.createEl("table", { cls: "ninety-param-table" });
+		const table = container.createEl("table", { cls: "ninety-command-param-table" });
 		const headerRow = table.createEl("thead").createEl("tr");
 		for (const heading of ["Parameter", "Accepts", "Default", "Notes"]) {
 			headerRow.createEl("th", { text: heading });

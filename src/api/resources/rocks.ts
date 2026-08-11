@@ -1,4 +1,4 @@
-import type { NinetyApiClient } from "../client";
+import type { CommandApiClient } from "../client";
 import type {
 	AscDescSortDirection,
 	PaginatedResponse,
@@ -141,7 +141,7 @@ export interface RocksResource {
 	create(data: CreateRockDTO): Promise<RockResponseDTO[]>;
 }
 
-export function createRocksResource(client: NinetyApiClient): RocksResource {
+export function createRocksResource(client: CommandApiClient): RocksResource {
 	return {
 		query: (params) =>
 			client.request<QueryRocksResponseDTO>({

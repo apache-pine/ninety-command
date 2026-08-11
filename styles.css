@@ -1,53 +1,53 @@
-.ninety-connection-status {
+.ninety-command-connection-status {
 	font-size: var(--font-ui-smaller);
 	margin-top: 4px;
 }
 
-.ninety-connection-status.is-success {
+.ninety-command-connection-status.is-success {
 	color: var(--text-success);
 }
 
-.ninety-connection-status.is-error {
+.ninety-command-connection-status.is-error {
 	color: var(--text-error);
 }
 
-.ninety-connection-status.is-pending {
+.ninety-command-connection-status.is-pending {
 	color: var(--text-muted);
 }
 
-.ninety-modal-loading {
+.ninety-command-modal-loading {
 	color: var(--text-muted);
 }
 
-.ninety-picker-sub {
+.ninety-command-picker-sub {
 	font-size: var(--font-ui-smaller);
 	color: var(--text-muted);
 }
 
-.ninety-panel-toolbar {
+.ninety-command-panel-toolbar {
 	display: flex;
 	justify-content: flex-end;
 	margin-bottom: 8px;
 }
 
-.ninety-panel-filter {
+.ninety-command-panel-filter {
 	display: flex;
 	align-items: center;
 	gap: 4px;
 	margin-bottom: 8px;
 }
 
-.ninety-panel-empty {
+.ninety-command-panel-empty {
 	color: var(--text-muted);
 	font-size: var(--font-ui-smaller);
 	padding: 4px 0;
 }
 
-.ninety-section {
+.ninety-command-section {
 	margin-bottom: 16px;
 }
 
-.ninety-section-header {
+.ninety-command-section-header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -55,49 +55,49 @@
 	margin-bottom: 4px;
 }
 
-.ninety-section-list {
+.ninety-command-section-list {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
 }
 
-.ninety-item {
+.ninety-command-item {
 	padding: 4px 0;
 	border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.ninety-item-title {
+.ninety-command-item-title {
 	font-size: var(--font-ui-small);
 	font-weight: 500;
-	/* Inherits color from its container (.ninety-codeblock or the sidebar
+	/* Inherits color from its container (.ninety-command-codeblock or the sidebar
 	   pane) rather than setting its own, so the dark/light overrides below
 	   apply consistently without being overridden themselves. */
 }
 
-.ninety-section-more {
+.ninety-command-section-more {
 	color: var(--text-faint);
 	font-size: var(--font-ui-smaller);
 	margin-top: 4px;
 }
 
-.ninety-badge {
+.ninety-command-badge {
 	font-size: var(--font-ui-smaller);
 	font-weight: var(--font-semibold);
 }
 
-.ninety-badge.is-on-track {
+.ninety-command-badge.is-on-track {
 	color: var(--text-success);
 }
 
-.ninety-badge.is-off-track {
+.ninety-command-badge.is-off-track {
 	color: var(--text-error);
 }
 
-.ninety-badge.is-draft {
+.ninety-command-badge.is-draft {
 	color: var(--text-muted);
 }
 
-.ninety-codeblock {
+.ninety-command-codeblock {
 	margin: 8px 0;
 	padding: 8px 12px;
 	border: 1px solid var(--background-modifier-border);
@@ -111,11 +111,11 @@
    inheriting it here can land dark-on-dark. Obsidian's own theme-dark/
    theme-light body classes are a more reliable signal than any individual
    theme's custom properties, so use them as a legibility safety net. */
-.theme-dark .ninety-codeblock {
+.theme-dark .ninety-command-codeblock {
 	color: #e3e3e3;
 }
 
-.theme-light .ninety-codeblock {
+.theme-light .ninety-command-codeblock {
 	color: #1a1a1a;
 }
 
@@ -124,31 +124,31 @@
    --background-modifier-border can suffer the same scoping issue as
    --text-normal above. Left untouched everywhere else (e.g. the sidebar
    panel), since those aren't reported as having the same problem. */
-.theme-dark .ninety-codeblock .ninety-picker-sub,
-.theme-dark .ninety-codeblock .ninety-section-more,
-.theme-dark .ninety-codeblock .ninety-panel-empty,
-.theme-dark .ninety-codeblock .ninety-modal-loading,
-.theme-dark .ninety-codeblock .ninety-badge.is-draft {
+.theme-dark .ninety-command-codeblock .ninety-command-picker-sub,
+.theme-dark .ninety-command-codeblock .ninety-command-section-more,
+.theme-dark .ninety-command-codeblock .ninety-command-panel-empty,
+.theme-dark .ninety-command-codeblock .ninety-command-modal-loading,
+.theme-dark .ninety-command-codeblock .ninety-command-badge.is-draft {
 	color: #a8a8a8;
 }
 
-.theme-light .ninety-codeblock .ninety-picker-sub,
-.theme-light .ninety-codeblock .ninety-section-more,
-.theme-light .ninety-codeblock .ninety-panel-empty,
-.theme-light .ninety-codeblock .ninety-modal-loading,
-.theme-light .ninety-codeblock .ninety-badge.is-draft {
+.theme-light .ninety-command-codeblock .ninety-command-picker-sub,
+.theme-light .ninety-command-codeblock .ninety-command-section-more,
+.theme-light .ninety-command-codeblock .ninety-command-panel-empty,
+.theme-light .ninety-command-codeblock .ninety-command-modal-loading,
+.theme-light .ninety-command-codeblock .ninety-command-badge.is-draft {
 	color: #595959;
 }
 
-.theme-dark .ninety-codeblock .ninety-item {
+.theme-dark .ninety-command-codeblock .ninety-command-item {
 	border-bottom-color: #4d4d4d;
 }
 
-.theme-light .ninety-codeblock .ninety-item {
+.theme-light .ninety-command-codeblock .ninety-command-item {
 	border-bottom-color: #cccccc;
 }
 
-.ninety-codeblock-header {
+.ninety-command-codeblock-header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -156,18 +156,18 @@
 	margin-bottom: 4px;
 }
 
-.ninety-codeblock-title {
+.ninety-command-codeblock-title {
 	font-weight: var(--font-semibold);
 }
 
-.ninety-codeblock-actions {
+.ninety-command-codeblock-actions {
 	display: flex;
 	align-items: center;
 	gap: 4px;
 	flex-shrink: 0;
 }
 
-.ninety-button {
+.ninety-command-button {
 	background-color: var(--interactive-normal);
 	color: var(--text-normal);
 	border: 1px solid var(--background-modifier-border);
@@ -177,58 +177,58 @@
 	cursor: pointer;
 }
 
-.ninety-button:hover {
+.ninety-command-button:hover {
 	background-color: var(--interactive-hover);
 }
 
-.ninety-item-actions {
+.ninety-command-item-actions {
 	display: flex;
 	align-items: center;
 	gap: 4px;
 	margin-top: 4px;
 }
 
-.ninety-scorecard-group-header {
+.ninety-command-scorecard-group-header {
 	font-weight: var(--font-semibold);
 	font-size: var(--font-ui-small);
 	margin-top: 12px;
 	margin-bottom: 4px;
 }
 
-.ninety-scorecard-group-header:first-child {
+.ninety-command-scorecard-group-header:first-child {
 	margin-top: 0;
 }
 
-.ninety-param-reference summary {
+.ninety-command-param-reference summary {
 	cursor: pointer;
 	font-weight: var(--font-semibold);
 	margin: 12px 0 8px;
 }
 
-.ninety-param-reference h4 {
+.ninety-command-param-reference h4 {
 	margin: 16px 0 4px;
 }
 
-.ninety-param-reference h4:first-of-type {
+.ninety-command-param-reference h4:first-of-type {
 	margin-top: 8px;
 }
 
-.ninety-param-table {
+.ninety-command-param-table {
 	width: 100%;
 	border-collapse: collapse;
 	font-size: var(--font-ui-smaller);
 	margin-bottom: 8px;
 }
 
-.ninety-param-table th,
-.ninety-param-table td {
+.ninety-command-param-table th,
+.ninety-command-param-table td {
 	border: 1px solid var(--background-modifier-border);
 	padding: 4px 8px;
 	text-align: left;
 	vertical-align: top;
 }
 
-.ninety-param-table th {
+.ninety-command-param-table th {
 	background-color: var(--background-secondary);
 	font-weight: var(--font-semibold);
 }

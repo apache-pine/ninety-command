@@ -1,4 +1,4 @@
-import type { NinetyApiClient } from "../client";
+import type { CommandApiClient } from "../client";
 
 export type ScorecardPeriodInterval = "weekly" | "monthly" | "quarterly" | "annual";
 export type ScorecardWindow = "default" | "qtd" | "ytd" | "currentQuarter" | "currentYear";
@@ -137,7 +137,7 @@ export interface ScorecardResource {
 	deleteNote(kpiId: string, periodStartDate: string): Promise<void>;
 }
 
-export function createScorecardResource(client: NinetyApiClient): ScorecardResource {
+export function createScorecardResource(client: CommandApiClient): ScorecardResource {
 	return {
 		getTeamScorecard: (params) =>
 			client.request<TeamScorecardResponseDTO>({

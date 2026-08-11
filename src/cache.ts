@@ -1,22 +1,22 @@
 import type { AvailableTeamResponseDTO } from "./api/resources/teams";
 import type { CompanyUserResponseDTO } from "./api/resources/users";
-import type NinetyPlugin from "./main";
+import type CommandPlugin from "./main";
 
 /**
  * Shared team/user cache read-through helpers, used by both the settings tab
  * and the capture modals so there is one place that fetches + persists this data.
- * These throw NinetyApiError on failure like the resource layer — no Notice
+ * These throw CommandApiError on failure like the resource layer — no Notice
  * calls here, callers surface errors.
  */
 
-export async function fetchAndCacheTeams(plugin: NinetyPlugin): Promise<AvailableTeamResponseDTO[]> {
+export async function fetchAndCacheTeams(plugin: CommandPlugin): Promise<AvailableTeamResponseDTO[]> {
 	const teams = await plugin.apiClient.teams.available();
 	plugin.settings.teamsCache = teams;
 	await plugin.saveSettings();
 	return teams;
 }
 
-export async function fetchAndCacheUsers(plugin: NinetyPlugin): Promise<CompanyUserResponseDTO[]> {
+export async function fetchAndCacheUsers(plugin: CommandPlugin): Promise<CompanyUserResponseDTO[]> {
 	const users = await plugin.apiClient.users.listForCompany();
 	plugin.settings.usersCache = users;
 	await plugin.saveSettings();
@@ -24,7 +24,7 @@ export async function fetchAndCacheUsers(plugin: NinetyPlugin): Promise<CompanyU
 }
 
 export async function fetchAndCacheAll(
-	plugin: NinetyPlugin,
+	plugin: CommandPlugin,
 ): Promise<{ teams: AvailableTeamResponseDTO[]; users: CompanyUserResponseDTO[] }> {
 	const [teams, users] = await Promise.all([
 		plugin.apiClient.teams.available(),
@@ -37,14 +37,14 @@ export async function fetchAndCacheAll(
 	return { teams, users };
 }
 
-export async function ensureTeamsCache(plugin: NinetyPlugin): Promise<AvailableTeamResponseDTO[]> {
+export async function ensureTeamsCache(plugin: CommandPlugin): Promise<AvailableTeamResponseDTO[]> {
 	if (plugin.settings.teamsCache.length > 0) {
 		return plugin.settings.teamsCache;
 	}
 	return fetchAndCacheTeams(plugin);
 }
 
-export async function ensureUsersCache(plugin: NinetyPlugin): Promise<CompanyUserResponseDTO[]> {
+export async function ensureUsersCache(plugin: CommandPlugin): Promise<CompanyUserResponseDTO[]> {
 	if (plugin.settings.usersCache.length > 0) {
 		return plugin.settings.usersCache;
 	}
