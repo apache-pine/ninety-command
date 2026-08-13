@@ -67,6 +67,10 @@ export async function resolveIssuesContext(
 	plugin: CommandPlugin,
 	params: Record<string, string>,
 ): Promise<IssuesBlockContext> {
+	if (params.id?.trim()) {
+		return { label: "By ID", teamIds: [] };
+	}
+
 	const resolved = await resolveTeamListParam(plugin, params.team);
 	if (!resolved) throw new BlockParamError(teamResolutionFailedMessage(params.team));
 	return { label: resolved.displayLabel, teamIds: resolved.teamIds };
@@ -78,6 +82,14 @@ export async function queryIssuesForBlock(
 	limit: number,
 	params: Record<string, string>,
 ): Promise<QueryResult<IssueResponseDTO>> {
+	// Bypasses every other filter — fetches exactly this Issue by id, direct from
+	// GET /issues/{id}, regardless of team/completed/archived/etc.
+	const id = params.id?.trim();
+	if (id) {
+		const issue = await plugin.apiClient.issues.get(id);
+		return { items: [issue], moreAvailable: false };
+	}
+
 	const assigneeIds = await resolveAssigneeFilterParam(plugin, params);
 	const priorityFilter = parsePriorityParam(params.priority);
 	const createdByUserId = await resolveCreatedByFilter(plugin, params);
@@ -118,6 +130,12 @@ export async function resolveTodosContext(
 	plugin: CommandPlugin,
 	params: Record<string, string>,
 ): Promise<TodosBlockContext> {
+	if (params.id?.trim()) {
+		// Fetched directly by id — bypasses the list endpoint entirely, so this
+		// is also the only way to embed a personal To-Do (see queryTodosForBlock).
+		return { label: "By ID", teamId: "" };
+	}
+
 	if (parseTriStateBool(params.personal, undefined) === true) {
 		// The API has no working way to list personal To-Dos — see personalTodosUnsupportedMessage.
 		throw new BlockParamError(personalTodosUnsupportedMessage());
@@ -156,6 +174,15 @@ export async function queryTodosForBlock(
 	limit: number,
 	params: Record<string, string>,
 ): Promise<QueryResult<TodoResponseDTO>> {
+	// Bypasses every other filter, including the personal: true block above —
+	// GET /todos/{id} works fine for personal To-Dos even though the list
+	// endpoints can't return them (see personalTodosUnsupportedMessage).
+	const id = params.id?.trim();
+	if (id) {
+		const todo = await plugin.apiClient.todos.get(id);
+		return { items: [todo], moreAvailable: false };
+	}
+
 	const assigneeIds = await resolveAssigneeFilterParam(plugin, params);
 	const createdByUserId = await resolveCreatedByFilter(plugin, params);
 	const repeatFilter = parseRepeatParam(params.repeat);
@@ -246,6 +273,10 @@ export async function resolveRocksContext(
 	plugin: CommandPlugin,
 	params: Record<string, string>,
 ): Promise<RocksBlockContext> {
+	if (params.id?.trim()) {
+		return { label: "By ID", teamId: "" };
+	}
+
 	const resolved = await resolveTeamParam(plugin, params.team);
 	if (!resolved) throw new BlockParamError(teamResolutionFailedMessage(params.team));
 	return { label: resolved.teamName, teamId: resolved.teamId };
@@ -257,6 +288,14 @@ export async function queryRocksForBlock(
 	limit: number,
 	params: Record<string, string>,
 ): Promise<QueryResult<RockResponseDTO>> {
+	// Bypasses every other filter — fetches exactly this Rock by id, direct from
+	// GET /rocks/{id}, regardless of team/status/level/etc.
+	const id = params.id?.trim();
+	if (id) {
+		const rock = await plugin.apiClient.rocks.get(id);
+		return { items: [rock], moreAvailable: false };
+	}
+
 	const explicitStatus = parseRockStatus(params.status);
 	const assigneeIds = await resolveAssigneeFilterParam(plugin, params);
 	const createdByUserId = await resolveCreatedByFilter(plugin, params);

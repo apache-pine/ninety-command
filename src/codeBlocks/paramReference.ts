@@ -7,6 +7,12 @@ export interface ParamReferenceRow {
 
 export const ISSUES_PARAM_REFERENCE: ParamReferenceRow[] = [
 	{
+		param: "id",
+		accepts: "An Issue id",
+		default: "unset",
+		notes: "Fetches exactly this Issue directly by id, bypassing every other filter (team, completed, assignee, etc.)",
+	},
+	{
 		param: "team",
 		accepts: "Team name or id; comma-separated for multiple",
 		default: "Configured default team",
@@ -64,6 +70,12 @@ export const ISSUES_PARAM_REFERENCE: ParamReferenceRow[] = [
 
 export const TODOS_PARAM_REFERENCE: ParamReferenceRow[] = [
 	{
+		param: "id",
+		accepts: "A To-Do id",
+		default: "unset",
+		notes: "Fetches exactly this To-Do directly by id, bypassing every other filter. The only way to embed a personal To-Do — see personal below",
+	},
+	{
 		param: "team",
 		accepts: "Team name or id",
 		default: "Configured default team",
@@ -73,7 +85,7 @@ export const TODOS_PARAM_REFERENCE: ParamReferenceRow[] = [
 		param: "personal",
 		accepts: "false",
 		default: "false",
-		notes: "true always errors — confirmed against the live API, Ninety has no working way to list personal To-Dos. Leave unset.",
+		notes: "true always errors — confirmed against the live API, Ninety has no working way to list personal To-Dos. Use id: instead if you know the To-Do's id.",
 	},
 	{ param: "limit", accepts: "Positive integer", default: "Settings → Default item limit", notes: "" },
 	{
@@ -115,6 +127,12 @@ export const TODOS_PARAM_REFERENCE: ParamReferenceRow[] = [
 ];
 
 export const ROCKS_PARAM_REFERENCE: ParamReferenceRow[] = [
+	{
+		param: "id",
+		accepts: "A Rock id",
+		default: "unset",
+		notes: "Fetches exactly this Rock directly by id, bypassing every other filter (team, status, level, etc.)",
+	},
 	{ param: "team", accepts: "Team name or id", default: "Configured default team", notes: "Single team only" },
 	{ param: "limit", accepts: "Positive integer", default: "Settings → Default item limit", notes: "" },
 	{
