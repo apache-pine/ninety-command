@@ -1,18 +1,31 @@
 import type { IssueResponseDTO } from "../api/resources/issues";
 import type { RockResponseDTO, RockSortField } from "../api/resources/rocks";
-import type { TodoResponseDTO } from "../api/resources/todos";
+import type { TodoRepeat, TodoResponseDTO } from "../api/resources/todos";
 import type { IssueInterval, RockFutureScope, RockLevelCode, RockStatusCode } from "../api/types";
 import type CommandPlugin from "../main";
 import type { QueryResult } from "../queries";
 import { resolveTeamListParam, resolveTeamParam } from "../teamResolution";
-import { resolveAssigneeFilterParam } from "../userResolution";
+import { resolveAssigneeFilterParam, resolveUserParam } from "../userResolution";
 import { normalizeOrderLower, normalizeOrderUpper, parseTriStateBool } from "../utils/blockParams";
-import { BlockParamError, teamResolutionFailedMessage } from "./blockErrors";
+import { BlockParamError, teamResolutionFailedMessage, userNotFoundMessage } from "./blockErrors";
 import type { BlockContext } from "./renderCommandBlock";
 
 /** Scales the raw fetch size with the requested limit, so client-side filtering has enough rows to work with. */
 function bufferSize(limit: number, floor: number, cap: number): number {
 	return Math.min(Math.max(limit * 5, floor), cap);
+}
+
+/**
+ * Resolves the `createdby:` param (name, email, or id) to a user id — shared
+ * by all three resources. No server-side "created by" filter exists on any
+ * of the query endpoints, so this is always applied client-side.
+ */
+async function resolveCreatedByFilter(plugin: CommandPlugin, params: Record<string, string>): Promise<string | null> {
+	const value = params.createdby?.trim();
+	if (!value) return null;
+	const resolved = await resolveUserParam(plugin, value);
+	if (!resolved) throw new BlockParamError(userNotFoundMessage(value));
+	return resolved.userId;
 }
 
 // ---- Issues ----
@@ -62,6 +75,7 @@ export async function queryIssuesForBlock(
 ): Promise<QueryResult<IssueResponseDTO>> {
 	const assigneeIds = await resolveAssigneeFilterParam(plugin, params);
 	const priorityFilter = parsePriorityParam(params.priority);
+	const createdByUserId = await resolveCreatedByFilter(plugin, params);
 
 	const page = await plugin.apiClient.issues.query({
 		teamId: context.teamIds.join(","),
@@ -80,6 +94,7 @@ export async function queryIssuesForBlock(
 	if (archivedFilter !== undefined) filtered = filtered.filter((i) => i.archived === archivedFilter);
 	if (assigneeIds) filtered = filtered.filter((i) => assigneeIds.includes(i.userId));
 	if (priorityFilter !== undefined) filtered = filtered.filter((i) => i.rating === priorityFilter);
+	if (createdByUserId) filtered = filtered.filter((i) => i.createdByUserId === createdByUserId);
 
 	return {
 		items: filtered.slice(0, limit),
@@ -107,6 +122,28 @@ export async function resolveTodosContext(
 	return { label: resolved.teamName, teamId: resolved.teamId };
 }
 
+/** Forgiving repeat: filter — accepts the real enum values case-insensitively, plus none/off as aliases for "Don't repeat". */
+function parseRepeatParam(value: string | undefined): TodoRepeat | undefined {
+	const normalized = value?.trim().toLowerCase();
+	switch (normalized) {
+		case "daily":
+			return "Daily";
+		case "weekly":
+			return "Weekly";
+		case "monthly":
+			return "Monthly";
+		case "quarterly":
+			return "Quarterly";
+		case "none":
+		case "off":
+		case "dont_repeat":
+		case "don't repeat":
+			return "Don't repeat";
+		default:
+			return undefined;
+	}
+}
+
 export async function queryTodosForBlock(
 	plugin: CommandPlugin,
 	context: TodosBlockContext,
@@ -114,6 +151,8 @@ export async function queryTodosForBlock(
 	params: Record<string, string>,
 ): Promise<QueryResult<TodoResponseDTO>> {
 	const assigneeIds = await resolveAssigneeFilterParam(plugin, params);
+	const createdByUserId = await resolveCreatedByFilter(plugin, params);
+	const repeatFilter = parseRepeatParam(params.repeat);
 	const isPersonal = parseTriStateBool(params.personal, undefined);
 	const completed = parseTriStateBool(params.completed, false);
 	const archived = parseTriStateBool(params.archived, false);
@@ -130,13 +169,19 @@ export async function queryTodosForBlock(
 		page: 1,
 	};
 
-	if (assigneeIds) {
-		// No server-side assignee filter — over-fetch a buffer, filter, then slice.
+	// No server-side assignee/createdBy/repeat filter — over-fetch a buffer when
+	// any of those are active, filter client-side, then slice.
+	if (assigneeIds || createdByUserId || repeatFilter) {
 		const page = await plugin.apiClient.todos.queryPaged({
 			...baseQuery,
 			pageSize: bufferSize(limit, 50, 100),
 		});
-		const filtered = page.items.filter((t) => assigneeIds.includes(t.userId));
+
+		let filtered = page.items;
+		if (assigneeIds) filtered = filtered.filter((t) => assigneeIds.includes(t.userId));
+		if (createdByUserId) filtered = filtered.filter((t) => t.createdByUserId === createdByUserId);
+		if (repeatFilter) filtered = filtered.filter((t) => (t.repeat ?? "Don't repeat") === repeatFilter);
+
 		return {
 			items: filtered.slice(0, limit),
 			moreAvailable: filtered.length > limit || page.totalCount > page.items.length,
@@ -206,6 +251,7 @@ export async function queryRocksForBlock(
 ): Promise<QueryResult<RockResponseDTO>> {
 	const explicitStatus = parseRockStatus(params.status);
 	const assigneeIds = await resolveAssigneeFilterParam(plugin, params);
+	const createdByUserId = await resolveCreatedByFilter(plugin, params);
 
 	const page = await plugin.apiClient.rocks.queryPaged({
 		teamId: context.teamId,
@@ -225,9 +271,10 @@ export async function queryRocksForBlock(
 
 	// An explicit status request shouldn't be second-guessed; only apply the
 	// default "active" filter when the caller didn't ask for a specific one.
-	const filtered = explicitStatus
+	let filtered = explicitStatus
 		? page.items
 		: page.items.filter((rock) => rock.statusCode !== "DONE" && rock.statusCode !== "CANCELED");
+	if (createdByUserId) filtered = filtered.filter((r) => r.createdByUserId === createdByUserId);
 
 	return {
 		items: filtered.slice(0, limit),

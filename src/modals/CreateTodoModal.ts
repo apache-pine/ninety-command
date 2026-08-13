@@ -1,7 +1,7 @@
 import { type App, Modal, Notice, Setting } from "obsidian";
 import { describeApiError, CommandApiError } from "../api/errors";
 import type { AvailableTeamResponseDTO } from "../api/resources/teams";
-import type { TodoResponseDTO } from "../api/resources/todos";
+import type { TodoRepeat, TodoResponseDTO } from "../api/resources/todos";
 import type { CompanyUserResponseDTO } from "../api/resources/users";
 import { ensureTeamsCache, ensureUsersCache } from "../cache";
 import type CommandPlugin from "../main";
@@ -9,6 +9,8 @@ import type { CapturePrefill } from "../utils/prefill";
 import { addDateField, addTeamDropdown, addUserDropdown, runSubmit } from "./formHelpers";
 
 export type TodoModalMode = { mode: "create"; prefill: CapturePrefill } | { mode: "edit"; todo: TodoResponseDTO };
+
+const REPEAT_OPTIONS: TodoRepeat[] = ["Don't repeat", "Daily", "Weekly", "Monthly", "Quarterly"];
 
 function toDateInputValue(dueDate: string | undefined): string {
 	if (!dueDate) return "";
@@ -21,7 +23,7 @@ export class CreateTodoModal extends Modal {
 	private description: string;
 	private dueDate: string;
 	private teamId: string;
-	private repeat: string;
+	private repeat: TodoRepeat;
 	private userId: string;
 
 	constructor(
@@ -36,14 +38,14 @@ export class CreateTodoModal extends Modal {
 			this.description = modeOpts.prefill.description;
 			this.dueDate = "";
 			this.teamId = "";
-			this.repeat = "";
+			this.repeat = "Don't repeat";
 			this.userId = "";
 		} else {
 			this.title = modeOpts.todo.title;
 			this.description = modeOpts.todo.description ?? "";
 			this.dueDate = toDateInputValue(modeOpts.todo.dueDate);
 			this.teamId = modeOpts.todo.teamId ?? "";
-			this.repeat = "";
+			this.repeat = modeOpts.todo.repeat ?? "Don't repeat";
 			this.userId = modeOpts.todo.userId;
 		}
 	}
@@ -95,16 +97,15 @@ export class CreateTodoModal extends Modal {
 
 		new Setting(contentEl)
 			.setName("Repeat")
-			.setDesc(
-				isEdit
-					? "e.g. weekly, monthly. Ninety doesn't report the current pattern back, so this starts blank — leave it blank to keep whatever's set."
-					: "e.g. weekly, monthly. Leave blank for a one-off To-Do.",
-			)
-			.addText((text) =>
-				text.setValue(this.repeat).onChange((value) => {
-					this.repeat = value;
-				}),
-			);
+			.setDesc("Recurrence pattern — the API only accepts these five values.")
+			.addDropdown((dropdown) => {
+				for (const option of REPEAT_OPTIONS) {
+					dropdown.addOption(option, option);
+				}
+				dropdown.setValue(this.repeat).onChange((value) => {
+					this.repeat = value as TodoRepeat;
+				});
+			});
 
 		addUserDropdown(
 			new Setting(contentEl).setName("Assignee"),
@@ -132,7 +133,7 @@ export class CreateTodoModal extends Modal {
 								description: this.description || undefined,
 								dueDate: this.dueDate || undefined,
 								teamId: this.teamId || undefined,
-								repeat: this.repeat || undefined,
+								repeat: this.repeat,
 								userId: this.userId || undefined,
 							});
 							new Notice(`Ninety Command: To-Do "${updated.title}" updated.`);
@@ -142,7 +143,7 @@ export class CreateTodoModal extends Modal {
 								description: this.description || undefined,
 								dueDate: this.dueDate || undefined,
 								teamId: this.teamId || undefined,
-								repeat: this.repeat || undefined,
+								repeat: this.repeat,
 								userId: this.userId || undefined,
 							});
 							new Notice(`Ninety Command: To-Do "${created.title}" created.`);

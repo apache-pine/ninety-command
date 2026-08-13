@@ -40,6 +40,12 @@ export const ISSUES_PARAM_REFERENCE: ParamReferenceRow[] = [
 		default: "no filter",
 		notes: "Client-side filter — no server support. Matches the Priority shown when creating/editing an Issue",
 	},
+	{
+		param: "createdby",
+		accepts: "Name, email, or id",
+		default: "no filter",
+		notes: "Client-side filter — no server support",
+	},
 	{ param: "search", accepts: "Free text", default: "none", notes: "Matches title, description, and comments" },
 	{
 		param: "sort",
@@ -78,6 +84,18 @@ export const TODOS_PARAM_REFERENCE: ParamReferenceRow[] = [
 		default: "no filter",
 		notes: "Client-side filter — no server support, unlike completed/archived",
 	},
+	{
+		param: "createdby",
+		accepts: "Name, email, or id",
+		default: "no filter",
+		notes: "Client-side filter — no server support",
+	},
+	{
+		param: "repeat",
+		accepts: "daily / weekly / monthly / quarterly / none",
+		default: "no filter",
+		notes: "Client-side filter. none (or off) is an alias for \"Don't repeat\"",
+	},
 	{ param: "title", accepts: "Free text", default: "none", notes: "Exact-match filter, distinct from search" },
 	{ param: "search", accepts: "Free text", default: "none", notes: "Matches title and description" },
 	{ param: "sort", accepts: "Any field name", default: "dueDate", notes: "" },
@@ -109,6 +127,12 @@ export const ROCKS_PARAM_REFERENCE: ParamReferenceRow[] = [
 		accepts: "Comma-separated names/emails/ids",
 		default: "no filter",
 		notes: "Server-side filter; takes precedence over the singular form",
+	},
+	{
+		param: "createdby",
+		accepts: "Name, email, or id",
+		default: "no filter",
+		notes: "Client-side filter — no server support",
 	},
 	{ param: "search", accepts: "Free text", default: "none", notes: "" },
 	{

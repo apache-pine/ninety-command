@@ -1,6 +1,13 @@
 import type { CommandApiClient } from "../client";
 import type { AscDescSortDirectionLower, PaginatedResponse } from "../types";
 
+/**
+ * The only values the API actually accepts — confirmed by probing it directly
+ * (anything else, e.g. "Yearly" or "Every Monday", is rejected with a 400).
+ * Not documented as an enum in the swagger, which described it as free text.
+ */
+export type TodoRepeat = "Don't repeat" | "Daily" | "Weekly" | "Monthly" | "Quarterly";
+
 export interface TodoResponseDTO {
 	/** Despite the swagger doc calling this `id`, the live API actually returns `_id`. */
 	_id: string;
@@ -17,6 +24,10 @@ export interface TodoResponseDTO {
 	createdDate: string;
 	/** Not actually present on live API responses despite the swagger doc; treat as absent. */
 	updatedDate?: string;
+	/** Present on every live response (confirmed), despite not being in the swagger doc at all. */
+	repeat?: TodoRepeat;
+	/** The creator's user id — distinct from `userId`, which is the assignee. */
+	createdByUserId?: string;
 }
 
 export interface CreateTodoDTO {
@@ -26,8 +37,7 @@ export interface CreateTodoDTO {
 	dueDate?: string;
 	/** Omit or pass an empty string for a personal To-Do. */
 	teamId?: string;
-	/** e.g. "weekly", "monthly". */
-	repeat?: string;
+	repeat?: TodoRepeat;
 	/** Defaults to the authenticated user. */
 	userId?: string;
 }
@@ -39,7 +49,7 @@ export interface UpdateTodoDTO {
 	teamId?: string;
 	title?: string;
 	description?: string;
-	repeat?: string;
+	repeat?: TodoRepeat;
 	userId?: string;
 }
 

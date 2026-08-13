@@ -55,6 +55,7 @@ completed: false
 | `assignee` / `owner` | Name, email, or id | no filter | Client-side filter — no server support. `owner` is an alias |
 | `assignees` / `owners` | Comma-separated names/emails/ids | no filter | Takes precedence over the singular form if both given |
 | `priority` | `0`-`5` | no filter | Client-side filter — no server support. Matches the Priority shown when creating/editing an Issue |
+| `createdby` | Name, email, or id | no filter | Client-side filter — no server support |
 | `search` | Free text | none | Matches title, description, and comments |
 | `sort` | Any field name | `createdDate` | Passed through as-is, not validated. `sort: priority` is aliased to the API's actual field name, `rating` |
 | `order` | `asc` / `desc` | `desc` | |
@@ -70,6 +71,8 @@ completed: false
 | `completed` | `true` / `false` / `any` | `false` | Server-side filter |
 | `archived` | `true` / `false` / `any` | `false` | Server-side filter |
 | `assignee` / `owner`, `assignees` / `owners` | Name, email, or id (comma-separated for a list) | no filter | Client-side filter — no server support, unlike completed/archived |
+| `createdby` | Name, email, or id | no filter | Client-side filter — no server support |
+| `repeat` | `daily` / `weekly` / `monthly` / `quarterly` / `none` | no filter | Client-side filter. `none` (or `off`) is an alias for "Don't repeat" |
 | `title` | Free text | none | Exact-match filter, distinct from search |
 | `search` | Free text | none | Matches title and description |
 | `sort` | Any field name | `dueDate` | |
@@ -89,6 +92,7 @@ completed: false
 | `includegoals` | `true` / `false` | unset | Includes linked goals in the response |
 | `owner` / `assignee` | Name, email, or id | no filter | Server-side filter |
 | `owners` / `assignees` | Comma-separated names/emails/ids | no filter | Server-side filter; takes precedence over the singular form |
+| `createdby` | Name, email, or id | no filter | Client-side filter — no server support |
 | `search` | Free text | none | |
 | `sort` | `title` / `statuscode` / `duedate` / `completeddate` / `owner` / `team` / `duedatequarter` | `dueDate` | Unrecognized values fall back to the default rather than erroring |
 | `order` | `asc` / `desc` | `asc` | |

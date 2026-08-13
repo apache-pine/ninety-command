@@ -11,7 +11,10 @@ export interface IssueResponseDTO {
 	archivedDate?: string;
 	completed: boolean;
 	completedDate?: string;
+	/** Display name of the creator — for the actual user id, see createdByUserId. */
 	createdBy: string;
+	/** The creator's user id — distinct from `userId`, which is the assignee. */
+	createdByUserId?: string;
 	deleted: boolean;
 	/** Raw HTML from Ninety's rich text editor — not Markdown or plaintext. */
 	description?: string;

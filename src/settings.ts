@@ -30,6 +30,10 @@ export class CommandSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		containerEl.createEl("h2", { text: "Ninety Command" });
+		containerEl.createEl("p", {
+			text: `Version ${this.plugin.manifest.version}`,
+			cls: "setting-item-description",
+		});
 
 		this.renderTokenSetting(containerEl);
 		this.renderConnectionStatusEl(containerEl);

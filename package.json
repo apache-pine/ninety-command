@@ -1,6 +1,6 @@
 {
 	"name": "ninety-command",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "Create, track, and manage your Ninety.io Issues, To-Dos, Rocks, Milestones, and Scorecard from within Obsidian.",
 	"main": "main.js",
 	"scripts": {
