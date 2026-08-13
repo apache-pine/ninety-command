@@ -48,6 +48,7 @@ completed: false
 |---|---|---|---|
 | `team` | Team name or id; comma-separated for multiple | Configured default team | Only Issues supports multiple teams in one block |
 | `limit` | Positive integer | Settings → Default item limit | |
+| `maxheight` | Positive integer (pixels), e.g. `maxheight: 400` | no limit — block grows to fit all rows | Makes the item list scrollable instead of the block growing indefinitely. The header stays fixed. |
 | `interactive` | `true` / `false` | `false` | Adds complete/edit/delete buttons to each row. Off by default so existing blocks are never silently made editable. |
 | `interval` | `short_term` / `long_term` | both | |
 | `completed` | `true` / `false` / `any` | `false` | Client-side filter — no server support |
@@ -67,6 +68,7 @@ completed: false
 | `team` | Team name or id | Configured default team | Ignored entirely if `personal: true` |
 | `personal` | `true` / `false` | both | `true` shows personal To-Dos only, and `team` is ignored |
 | `limit` | Positive integer | Settings → Default item limit | |
+| `maxheight` | Positive integer (pixels), e.g. `maxheight: 400` | no limit — block grows to fit all rows | Makes the item list scrollable instead of the block growing indefinitely. The header stays fixed. |
 | `interactive` | `true` / `false` | `false` | Adds complete/edit/delete buttons to each row. Off by default so existing blocks are never silently made editable. |
 | `completed` | `true` / `false` / `any` | `false` | Server-side filter |
 | `archived` | `true` / `false` / `any` | `false` | Server-side filter |
@@ -84,6 +86,7 @@ completed: false
 |---|---|---|---|
 | `team` | Team name or id | Configured default team | Single team only |
 | `limit` | Positive integer | Settings → Default item limit | |
+| `maxheight` | Positive integer (pixels), e.g. `maxheight: 400` | no limit — block grows to fit all rows | Makes the item list scrollable instead of the block growing indefinitely. The header stays fixed. |
 | `interactive` | `true` / `false` | `false` | Adds complete/edit/delete buttons to each row. Off by default so existing blocks are never silently made editable. |
 | `status` | `off_track` / `on_track` / `done` / `canceled` / `draft` | active only (excludes done & canceled) | An explicit status skips the default active-only filter |
 | `level` | `user` / `company_and_department` / `company` / `department` | all levels | |
@@ -106,6 +109,9 @@ This same table is also available inside Obsidian, under **Settings → Ninety C
 - **Default assignee** — pre-selects the sidebar's assignee filter when it opens; change it live in the panel any time without touching this setting.
 - **Auto-refresh panel** — optionally refresh the sidebar panel on an interval while it's open.
 - **Default item limit** — default row count for the sidebar and any code block without its own `limit:`.
+- **Show item counts in code blocks** — displays a count of rendered items next to each code block's title.
+- **Confirm before completing** — off by default; turn on if you'd rather confirm before the complete/mark-done row action runs, in the sidebar and in interactive code blocks.
+- **Confirm before deleting** — on by default; turn off if you're confident you won't hit delete by accident, in the sidebar and in interactive code blocks.
 - **Cached data** — teams and users are cached locally; "Refresh now" re-fetches both (needed before the Default assignee dropdown has anything to choose from).
 - **Code block parameter reference** — a collapsible, in-app copy of the tables above.
 

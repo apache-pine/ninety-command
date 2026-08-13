@@ -14,6 +14,12 @@ export const ISSUES_PARAM_REFERENCE: ParamReferenceRow[] = [
 	},
 	{ param: "limit", accepts: "Positive integer", default: "Settings → Default item limit", notes: "" },
 	{
+		param: "maxheight",
+		accepts: "Positive integer (pixels), e.g. maxheight: 400",
+		default: "no limit — block grows to fit all rows",
+		notes: "Makes the item list scrollable instead of the block growing indefinitely. The header stays fixed.",
+	},
+	{
 		param: "interactive",
 		accepts: "true / false",
 		default: "false",
@@ -71,6 +77,12 @@ export const TODOS_PARAM_REFERENCE: ParamReferenceRow[] = [
 	},
 	{ param: "limit", accepts: "Positive integer", default: "Settings → Default item limit", notes: "" },
 	{
+		param: "maxheight",
+		accepts: "Positive integer (pixels), e.g. maxheight: 400",
+		default: "no limit — block grows to fit all rows",
+		notes: "Makes the item list scrollable instead of the block growing indefinitely. The header stays fixed.",
+	},
+	{
 		param: "interactive",
 		accepts: "true / false",
 		default: "false",
@@ -105,6 +117,12 @@ export const TODOS_PARAM_REFERENCE: ParamReferenceRow[] = [
 export const ROCKS_PARAM_REFERENCE: ParamReferenceRow[] = [
 	{ param: "team", accepts: "Team name or id", default: "Configured default team", notes: "Single team only" },
 	{ param: "limit", accepts: "Positive integer", default: "Settings → Default item limit", notes: "" },
+	{
+		param: "maxheight",
+		accepts: "Positive integer (pixels), e.g. maxheight: 400",
+		default: "no limit — block grows to fit all rows",
+		notes: "Makes the item list scrollable instead of the block growing indefinitely. The header stays fixed.",
+	},
 	{
 		param: "interactive",
 		accepts: "true / false",

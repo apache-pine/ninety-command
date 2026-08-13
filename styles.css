@@ -133,6 +133,7 @@
 .theme-dark .ninety-command-codeblock .ninety-command-section-more,
 .theme-dark .ninety-command-codeblock .ninety-command-panel-empty,
 .theme-dark .ninety-command-codeblock .ninety-command-modal-loading,
+.theme-dark .ninety-command-codeblock .ninety-command-codeblock-count,
 .theme-dark .ninety-command-codeblock .ninety-command-badge.is-draft {
 	color: #a8a8a8;
 }
@@ -141,6 +142,7 @@
 .theme-light .ninety-command-codeblock .ninety-command-section-more,
 .theme-light .ninety-command-codeblock .ninety-command-panel-empty,
 .theme-light .ninety-command-codeblock .ninety-command-modal-loading,
+.theme-light .ninety-command-codeblock .ninety-command-codeblock-count,
 .theme-light .ninety-command-codeblock .ninety-command-badge.is-draft {
 	color: #595959;
 }
@@ -161,8 +163,21 @@
 	margin-bottom: 4px;
 }
 
+.ninety-command-codeblock-title-wrap {
+	display: flex;
+	align-items: baseline;
+	gap: 6px;
+	min-width: 0;
+}
+
 .ninety-command-codeblock-title {
 	font-weight: var(--font-semibold);
+}
+
+.ninety-command-codeblock-count {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	flex-shrink: 0;
 }
 
 .ninety-command-codeblock-actions {

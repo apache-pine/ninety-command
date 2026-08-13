@@ -53,7 +53,7 @@ export class ConfirmModal extends Modal {
 	}
 }
 
-export function confirmDelete(app: App, message: string, confirmLabel = "Delete"): Promise<boolean> {
+export function confirmAction(app: App, message: string, confirmLabel: string): Promise<boolean> {
 	const modal = new ConfirmModal(app, message, confirmLabel);
 	const promise = modal.waitForClose();
 	modal.open();

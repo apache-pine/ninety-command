@@ -19,6 +19,12 @@ export interface CommandSettings {
 	defaultAssigneeUserId: string | null;
 	/** Cached label so the dropdown can render without a refetch. */
 	defaultAssigneeUserName: string | null;
+	/** Shows a count of rendered items at the top of every code block. */
+	showCodeBlockCounts: boolean;
+	/** Ask for confirmation before the complete/mark-done row action runs. Off by default — matches prior behavior. */
+	confirmOnComplete: boolean;
+	/** Ask for confirmation before the delete row action runs. On by default — matches prior (always-confirmed) behavior. */
+	confirmOnDelete: boolean;
 }
 
 export const DEFAULT_SETTINGS: CommandSettings = {
@@ -32,4 +38,7 @@ export const DEFAULT_SETTINGS: CommandSettings = {
 	defaultItemLimit: 10,
 	defaultAssigneeUserId: null,
 	defaultAssigneeUserName: null,
+	showCodeBlockCounts: false,
+	confirmOnComplete: false,
+	confirmOnDelete: true,
 };

@@ -42,6 +42,9 @@ export class CommandSettingTab extends PluginSettingTab {
 		this.renderDefaultAssigneeSetting(containerEl);
 		this.renderAutoRefreshSetting(containerEl);
 		this.renderDefaultLimitSetting(containerEl);
+		this.renderShowCountsSetting(containerEl);
+		this.renderConfirmCompleteSetting(containerEl);
+		this.renderConfirmDeleteSetting(containerEl);
 		this.renderCacheSetting(containerEl);
 		this.renderNinetyLink(containerEl);
 		this.renderParamReferenceSetting(containerEl);
@@ -274,6 +277,42 @@ export class CommandSettingTab extends PluginSettingTab {
 						this.plugin.settings.defaultItemLimit = Math.floor(n);
 						await this.plugin.saveSettings();
 					}
+				});
+			});
+	}
+
+	private renderShowCountsSetting(containerEl: HTMLElement): void {
+		new Setting(containerEl)
+			.setName("Show item counts in code blocks")
+			.setDesc("Displays a count of rendered items next to each code block's title.")
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.showCodeBlockCounts).onChange(async (value) => {
+					this.plugin.settings.showCodeBlockCounts = value;
+					await this.plugin.saveSettings();
+				});
+			});
+	}
+
+	private renderConfirmCompleteSetting(containerEl: HTMLElement): void {
+		new Setting(containerEl)
+			.setName("Confirm before completing")
+			.setDesc("Ask for confirmation before the complete/mark-done row action runs, in the sidebar and in interactive code blocks.")
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.confirmOnComplete).onChange(async (value) => {
+					this.plugin.settings.confirmOnComplete = value;
+					await this.plugin.saveSettings();
+				});
+			});
+	}
+
+	private renderConfirmDeleteSetting(containerEl: HTMLElement): void {
+		new Setting(containerEl)
+			.setName("Confirm before deleting")
+			.setDesc("Ask for confirmation before the delete row action runs, in the sidebar and in interactive code blocks. Turn off if you're confident you won't hit it by accident.")
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.confirmOnDelete).onChange(async (value) => {
+					this.plugin.settings.confirmOnDelete = value;
+					await this.plugin.saveSettings();
 				});
 			});
 	}

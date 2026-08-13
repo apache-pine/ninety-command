@@ -42,8 +42,16 @@ function parseLimitParam(value: string | undefined, defaultValue: number): numbe
 	return Number.isFinite(n) && n > 0 ? n : defaultValue;
 }
 
+/** `maxheight: 400` or `maxheight: 400px` → `"400px"`. Anything else (unset, non-positive, non-numeric) means no cap. */
+function parseMaxHeightParam(value: string | undefined): string | undefined {
+	if (!value) return undefined;
+	const n = Number(value.trim().replace(/px$/i, ""));
+	return Number.isFinite(n) && n > 0 ? `${n}px` : undefined;
+}
+
 class CommandBlockRenderChild<T, TContext extends BlockContext> extends MarkdownRenderChild {
 	private titleEl!: HTMLElement;
+	private countEl!: HTMLElement;
 	private listEl!: HTMLElement;
 
 	constructor(
@@ -60,7 +68,9 @@ class CommandBlockRenderChild<T, TContext extends BlockContext> extends Markdown
 		const wrapper = this.containerEl.createDiv({ cls: "ninety-command-codeblock" });
 
 		const headerEl = wrapper.createDiv({ cls: "ninety-command-codeblock-header" });
-		this.titleEl = headerEl.createSpan({ cls: "ninety-command-codeblock-title", text: this.config.resourceLabel });
+		const titleWrapEl = headerEl.createDiv({ cls: "ninety-command-codeblock-title-wrap" });
+		this.titleEl = titleWrapEl.createSpan({ cls: "ninety-command-codeblock-title", text: this.config.resourceLabel });
+		this.countEl = titleWrapEl.createSpan({ cls: "ninety-command-codeblock-count" });
 
 		const actionsEl = headerEl.createDiv({ cls: "ninety-command-codeblock-actions" });
 
@@ -83,8 +93,13 @@ class CommandBlockRenderChild<T, TContext extends BlockContext> extends Markdown
 	private async render(): Promise<void> {
 		this.listEl.empty();
 		this.listEl.createEl("p", { text: "Loading…", cls: "ninety-command-modal-loading" });
+		this.countEl.setText("");
 
 		const params = parseBlockParams(this.source);
+
+		const maxHeight = parseMaxHeightParam(params.maxheight);
+		this.listEl.style.maxHeight = maxHeight ?? "";
+		this.listEl.style.overflowY = maxHeight ? "auto" : "";
 
 		try {
 			const context = await this.config.resolveContext(this.plugin, params);
@@ -95,6 +110,10 @@ class CommandBlockRenderChild<T, TContext extends BlockContext> extends Markdown
 			const limit = parseLimitParam(params.limit, this.plugin.settings.defaultItemLimit);
 			const result = await this.config.fetch(this.plugin, context, limit, params);
 			if (!this.containerEl.isConnected) return;
+
+			if (this.plugin.settings.showCodeBlockCounts) {
+				this.countEl.setText(result.moreAvailable ? `(${result.items.length}+)` : `(${result.items.length})`);
+			}
 
 			this.listEl.empty();
 

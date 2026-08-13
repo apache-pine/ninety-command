@@ -2,7 +2,7 @@ import { Notice, setIcon } from "obsidian";
 import type { IssueResponseDTO } from "./api/resources/issues";
 import type { RockResponseDTO } from "./api/resources/rocks";
 import type { TodoResponseDTO } from "./api/resources/todos";
-import { confirmDelete } from "./modals/ConfirmModal";
+import { confirmAction } from "./modals/ConfirmModal";
 import { CreateIssueModal } from "./modals/CreateIssueModal";
 import { CreateRockModal } from "./modals/CreateRockModal";
 import { CreateTodoModal } from "./modals/CreateTodoModal";
@@ -31,11 +31,17 @@ export function renderIssueRowActions(
 ): void {
 	const completeBtn = addRowActionButton(actionsEl, "check", "Mark complete");
 	completeBtn.addEventListener("click", () => {
-		void runRowAction(completeBtn, async () => {
-			await plugin.apiClient.issues.update(issue._id, { completed: true });
-			new Notice(`Ninety Command: Issue "${issue.title}" completed.`);
-			onChanged();
-		});
+		void (async () => {
+			if (plugin.settings.confirmOnComplete) {
+				const confirmed = await confirmAction(plugin.app, `Mark Issue "${issue.title}" complete?`, "Complete");
+				if (!confirmed) return;
+			}
+			void runRowAction(completeBtn, async () => {
+				await plugin.apiClient.issues.update(issue._id, { completed: true });
+				new Notice(`Ninety Command: Issue "${issue.title}" completed.`);
+				onChanged();
+			});
+		})();
 	});
 
 	const editBtn = addRowActionButton(actionsEl, "pencil", "Edit");
@@ -46,8 +52,10 @@ export function renderIssueRowActions(
 	const deleteBtn = addRowActionButton(actionsEl, "trash-2", "Delete");
 	deleteBtn.addEventListener("click", () => {
 		void (async () => {
-			const confirmed = await confirmDelete(plugin.app, `Delete Issue "${issue.title}"? This can't be undone.`);
-			if (!confirmed) return;
+			if (plugin.settings.confirmOnDelete) {
+				const confirmed = await confirmAction(plugin.app, `Delete Issue "${issue.title}"? This can't be undone.`, "Delete");
+				if (!confirmed) return;
+			}
 			void runRowAction(deleteBtn, async () => {
 				await plugin.apiClient.issues.delete(issue._id);
 				new Notice(`Ninety Command: Issue "${issue.title}" deleted.`);
@@ -65,11 +73,17 @@ export function renderTodoRowActions(
 ): void {
 	const completeBtn = addRowActionButton(actionsEl, "check", "Mark complete");
 	completeBtn.addEventListener("click", () => {
-		void runRowAction(completeBtn, async () => {
-			await plugin.apiClient.todos.update(todo._id, { completed: true });
-			new Notice(`Ninety Command: To-Do "${todo.title}" completed.`);
-			onChanged();
-		});
+		void (async () => {
+			if (plugin.settings.confirmOnComplete) {
+				const confirmed = await confirmAction(plugin.app, `Mark To-Do "${todo.title}" complete?`, "Complete");
+				if (!confirmed) return;
+			}
+			void runRowAction(completeBtn, async () => {
+				await plugin.apiClient.todos.update(todo._id, { completed: true });
+				new Notice(`Ninety Command: To-Do "${todo.title}" completed.`);
+				onChanged();
+			});
+		})();
 	});
 
 	const editBtn = addRowActionButton(actionsEl, "pencil", "Edit");
@@ -80,8 +94,10 @@ export function renderTodoRowActions(
 	const deleteBtn = addRowActionButton(actionsEl, "trash-2", "Delete");
 	deleteBtn.addEventListener("click", () => {
 		void (async () => {
-			const confirmed = await confirmDelete(plugin.app, `Delete To-Do "${todo.title}"? This can't be undone.`);
-			if (!confirmed) return;
+			if (plugin.settings.confirmOnDelete) {
+				const confirmed = await confirmAction(plugin.app, `Delete To-Do "${todo.title}"? This can't be undone.`, "Delete");
+				if (!confirmed) return;
+			}
 			void runRowAction(deleteBtn, async () => {
 				await plugin.apiClient.todos.delete(todo._id);
 				new Notice(`Ninety Command: To-Do "${todo.title}" deleted.`);
@@ -99,11 +115,17 @@ export function renderRockRowActions(
 ): void {
 	const completeBtn = addRowActionButton(actionsEl, "check", "Mark done");
 	completeBtn.addEventListener("click", () => {
-		void runRowAction(completeBtn, async () => {
-			await plugin.apiClient.rocks.update(rock._id, { statusCode: "DONE" });
-			new Notice(`Ninety Command: Rock "${rock.title}" marked done.`);
-			onChanged();
-		});
+		void (async () => {
+			if (plugin.settings.confirmOnComplete) {
+				const confirmed = await confirmAction(plugin.app, `Mark Rock "${rock.title}" done?`, "Mark done");
+				if (!confirmed) return;
+			}
+			void runRowAction(completeBtn, async () => {
+				await plugin.apiClient.rocks.update(rock._id, { statusCode: "DONE" });
+				new Notice(`Ninety Command: Rock "${rock.title}" marked done.`);
+				onChanged();
+			});
+		})();
 	});
 
 	const editBtn = addRowActionButton(actionsEl, "pencil", "Edit");
@@ -114,8 +136,10 @@ export function renderRockRowActions(
 	const deleteBtn = addRowActionButton(actionsEl, "trash-2", "Delete");
 	deleteBtn.addEventListener("click", () => {
 		void (async () => {
-			const confirmed = await confirmDelete(plugin.app, `Delete Rock "${rock.title}"? This can't be undone.`);
-			if (!confirmed) return;
+			if (plugin.settings.confirmOnDelete) {
+				const confirmed = await confirmAction(plugin.app, `Delete Rock "${rock.title}"? This can't be undone.`, "Delete");
+				if (!confirmed) return;
+			}
 			void runRowAction(deleteBtn, async () => {
 				await plugin.apiClient.rocks.delete(rock._id);
 				new Notice(`Ninety Command: Rock "${rock.title}" deleted.`);
