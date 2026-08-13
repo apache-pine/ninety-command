@@ -104,6 +104,11 @@
 	border-radius: var(--radius-m);
 	background-color: var(--background-secondary);
 	color: var(--text-normal);
+	/* Refreshing a block shrinks it to "Loading…" then grows it back once
+	   results arrive. Without this, the browser's scroll-anchoring tries to
+	   keep whatever it anchored to in the same visual spot as the block
+	   resizes, which is what causes the view to jump/scroll on refresh. */
+	overflow-anchor: none;
 }
 
 /* Some themes scope --text-normal to the note's own (often light) reading
