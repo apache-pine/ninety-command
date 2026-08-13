@@ -7,7 +7,12 @@ import type { QueryResult } from "../queries";
 import { resolveTeamListParam, resolveTeamParam } from "../teamResolution";
 import { resolveAssigneeFilterParam, resolveUserParam } from "../userResolution";
 import { normalizeOrderLower, normalizeOrderUpper, parseTriStateBool } from "../utils/blockParams";
-import { BlockParamError, teamResolutionFailedMessage, userNotFoundMessage } from "./blockErrors";
+import {
+	BlockParamError,
+	personalTodosUnsupportedMessage,
+	teamResolutionFailedMessage,
+	userNotFoundMessage,
+} from "./blockErrors";
 import type { BlockContext } from "./renderCommandBlock";
 
 /** Scales the raw fetch size with the requested limit, so client-side filtering has enough rows to work with. */
@@ -106,7 +111,7 @@ export async function queryIssuesForBlock(
 // ---- To-Dos ----
 
 export interface TodosBlockContext extends BlockContext {
-	teamId: string | null;
+	teamId: string;
 }
 
 export async function resolveTodosContext(
@@ -114,7 +119,8 @@ export async function resolveTodosContext(
 	params: Record<string, string>,
 ): Promise<TodosBlockContext> {
 	if (parseTriStateBool(params.personal, undefined) === true) {
-		return { label: "Personal", teamId: null };
+		// The API has no working way to list personal To-Dos — see personalTodosUnsupportedMessage.
+		throw new BlockParamError(personalTodosUnsupportedMessage());
 	}
 
 	const resolved = await resolveTeamParam(plugin, params.team);
@@ -153,13 +159,15 @@ export async function queryTodosForBlock(
 	const assigneeIds = await resolveAssigneeFilterParam(plugin, params);
 	const createdByUserId = await resolveCreatedByFilter(plugin, params);
 	const repeatFilter = parseRepeatParam(params.repeat);
-	const isPersonal = parseTriStateBool(params.personal, undefined);
 	const completed = parseTriStateBool(params.completed, false);
 	const archived = parseTriStateBool(params.archived, false);
 
+	// isPersonal is deliberately never sent here: resolveTodosContext already
+	// rejects personal: true before this runs, and live testing showed
+	// isPersonal: false has no filtering effect at all — sending it would be
+	// dead weight at best.
 	const baseQuery = {
-		teamId: context.teamId ?? undefined,
-		isPersonal,
+		teamId: context.teamId,
 		completed,
 		archived,
 		searchText: params.search || undefined,

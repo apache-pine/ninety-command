@@ -61,7 +61,12 @@ export interface GetTodosQueryDTO {
 	page?: number;
 	/** Max 100. */
 	pageSize?: number;
-	isPersonal?: boolean;
+	/**
+	 * Deliberately not modeled here despite existing on TodoResponseDTO: live
+	 * testing confirmed the API 400s on isPersonal: true (in any request shape),
+	 * and isPersonal: false has no filtering effect — the query endpoints have
+	 * no working way to list personal (teamless) To-Dos at all.
+	 */
 	completed?: boolean;
 	archived?: boolean;
 	searchText?: string;

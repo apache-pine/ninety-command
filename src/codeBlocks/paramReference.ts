@@ -67,13 +67,13 @@ export const TODOS_PARAM_REFERENCE: ParamReferenceRow[] = [
 		param: "team",
 		accepts: "Team name or id",
 		default: "Configured default team",
-		notes: "Ignored entirely if personal: true",
+		notes: "",
 	},
 	{
 		param: "personal",
-		accepts: "true / false",
-		default: "both",
-		notes: "true shows personal To-Dos only, and team is ignored",
+		accepts: "false",
+		default: "false",
+		notes: "true always errors — confirmed against the live API, Ninety has no working way to list personal To-Dos. Leave unset.",
 	},
 	{ param: "limit", accepts: "Positive integer", default: "Settings → Default item limit", notes: "" },
 	{

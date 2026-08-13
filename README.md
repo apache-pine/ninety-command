@@ -65,8 +65,8 @@ completed: false
 
 | Parameter | Accepts | Default | Notes |
 |---|---|---|---|
-| `team` | Team name or id | Configured default team | Ignored entirely if `personal: true` |
-| `personal` | `true` / `false` | both | `true` shows personal To-Dos only, and `team` is ignored |
+| `team` | Team name or id | Configured default team | |
+| `personal` | `false` | `false` | `true` always errors — confirmed against the live API, Ninety has no working way to list personal To-Dos. Leave unset. |
 | `limit` | Positive integer | Settings → Default item limit | |
 | `maxheight` | Positive integer (pixels), e.g. `maxheight: 400` | no limit — block grows to fit all rows | Makes the item list scrollable instead of the block growing indefinitely. The header stays fixed. |
 | `interactive` | `true` / `false` | `false` | Adds complete/edit/delete buttons to each row. Off by default so existing blocks are never silently made editable. |
