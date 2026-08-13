@@ -26,6 +26,25 @@ function parseIntervalParam(value: string | undefined): IssueInterval | undefine
 	return normalized === "SHORT_TERM" || normalized === "LONG_TERM" ? normalized : undefined;
 }
 
+/**
+ * Issues' sortField is unconstrained free text server-side, but the actual
+ * queryable/sortable field is named `rating` (see IssueResponseDTO) even
+ * though the create/update body and Ninety's own UI call it "priority" —
+ * `sort: priority` is aliased here so users can use the name they actually
+ * know, rather than needing to discover the internal `rating` field name.
+ */
+function resolveIssuesSortField(value: string | undefined): string {
+	const trimmed = value?.trim();
+	if (!trimmed) return "createdDate";
+	return trimmed.toLowerCase() === "priority" ? "rating" : trimmed;
+}
+
+function parsePriorityParam(value: string | undefined): number | undefined {
+	if (!value) return undefined;
+	const n = Number(value.trim());
+	return Number.isFinite(n) ? n : undefined;
+}
+
 export async function resolveIssuesContext(
 	plugin: CommandPlugin,
 	params: Record<string, string>,
@@ -42,12 +61,13 @@ export async function queryIssuesForBlock(
 	params: Record<string, string>,
 ): Promise<QueryResult<IssueResponseDTO>> {
 	const assigneeIds = await resolveAssigneeFilterParam(plugin, params);
+	const priorityFilter = parsePriorityParam(params.priority);
 
 	const page = await plugin.apiClient.issues.query({
 		teamId: context.teamIds.join(","),
 		intervalCode: parseIntervalParam(params.interval),
 		searchText: params.search || undefined,
-		sortField: params.sort?.trim() || "createdDate",
+		sortField: resolveIssuesSortField(params.sort),
 		sortDirection: normalizeOrderUpper(params.order, "DESC"),
 		pageSize: bufferSize(limit, 50, 200),
 	});
@@ -59,6 +79,7 @@ export async function queryIssuesForBlock(
 	if (completedFilter !== undefined) filtered = filtered.filter((i) => i.completed === completedFilter);
 	if (archivedFilter !== undefined) filtered = filtered.filter((i) => i.archived === archivedFilter);
 	if (assigneeIds) filtered = filtered.filter((i) => assigneeIds.includes(i.userId));
+	if (priorityFilter !== undefined) filtered = filtered.filter((i) => i.rating === priorityFilter);
 
 	return {
 		items: filtered.slice(0, limit),

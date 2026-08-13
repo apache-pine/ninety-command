@@ -6,8 +6,8 @@ export function renderIssueRow(issue: IssueResponseDTO, rowEl: HTMLElement): voi
 	rowEl.createDiv({ text: issue.title, cls: "ninety-command-item-title" });
 	const meta = rowEl.createDiv({ cls: "ninety-command-picker-sub" });
 	meta.createSpan({ text: issue.intervalCode === "LONG_TERM" ? "Long-term" : "Short-term" });
-	if (issue.priority && issue.priority > 0) {
-		meta.createSpan({ text: ` · Priority ${issue.priority}` });
+	if (issue.rating && issue.rating > 0) {
+		meta.createSpan({ text: ` · Priority ${issue.rating}` });
 	}
 }
 

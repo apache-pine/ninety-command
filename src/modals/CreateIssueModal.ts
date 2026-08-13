@@ -34,7 +34,7 @@ export class CreateIssueModal extends Modal {
 			this.title = modeOpts.issue.title;
 			this.description = htmlDescriptionToEditable(modeOpts.issue.description);
 			this.interval = modeOpts.issue.intervalCode;
-			this.priority = modeOpts.issue.priority ?? 0;
+			this.priority = modeOpts.issue.rating ?? 0;
 			this.teamId = modeOpts.issue.teamId;
 		}
 	}

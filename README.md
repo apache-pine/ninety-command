@@ -54,8 +54,9 @@ completed: false
 | `archived` | `true` / `false` / `any` | `false` | Client-side filter — no server support |
 | `assignee` / `owner` | Name, email, or id | no filter | Client-side filter — no server support. `owner` is an alias |
 | `assignees` / `owners` | Comma-separated names/emails/ids | no filter | Takes precedence over the singular form if both given |
+| `priority` | `0`-`5` | no filter | Client-side filter — no server support. Matches the Priority shown when creating/editing an Issue |
 | `search` | Free text | none | Matches title, description, and comments |
-| `sort` | Any field name | `createdDate` | Passed through as-is, not validated |
+| `sort` | Any field name | `createdDate` | Passed through as-is, not validated. `sort: priority` is aliased to the API's actual field name, `rating` |
 | `order` | `asc` / `desc` | `desc` | |
 
 ### `ninety-todos`

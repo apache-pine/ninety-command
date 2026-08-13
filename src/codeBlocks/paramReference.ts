@@ -34,8 +34,19 @@ export const ISSUES_PARAM_REFERENCE: ParamReferenceRow[] = [
 		default: "no filter",
 		notes: "Takes precedence over the singular form if both given",
 	},
+	{
+		param: "priority",
+		accepts: "0-5",
+		default: "no filter",
+		notes: "Client-side filter — no server support. Matches the Priority shown when creating/editing an Issue",
+	},
 	{ param: "search", accepts: "Free text", default: "none", notes: "Matches title, description, and comments" },
-	{ param: "sort", accepts: "Any field name", default: "createdDate", notes: "Passed through as-is, not validated" },
+	{
+		param: "sort",
+		accepts: "Any field name",
+		default: "createdDate",
+		notes: "Passed through as-is, not validated. sort: priority is aliased to the API's actual field name, rating",
+	},
 	{ param: "order", accepts: "asc / desc", default: "desc", notes: "" },
 ];
 

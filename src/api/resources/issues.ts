@@ -16,7 +16,11 @@ export interface IssueResponseDTO {
 	/** Raw HTML from Ninety's rich text editor — not Markdown or plaintext. */
 	description?: string;
 	intervalCode: IssueInterval;
-	priority?: number;
+	/**
+	 * Called `priority` in the create/update request body (and in Ninety's own
+	 * UI), but the live API always returns this field as `rating`.
+	 */
+	rating?: number;
 	title: string;
 	createdDate: string;
 }
