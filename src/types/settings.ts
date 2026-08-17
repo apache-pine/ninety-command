@@ -25,6 +25,8 @@ export interface CommandSettings {
 	confirmOnComplete: boolean;
 	/** Ask for confirmation before the delete row action runs. On by default — matches prior (always-confirmed) behavior. */
 	confirmOnDelete: boolean;
+	/** Shows a header "add item" button on `interactive: true` code blocks. On by default. Doesn't affect the standalone `addbutton:` param, which always shows the button regardless of this setting. */
+	showAddButtonInInteractive: boolean;
 }
 
 export const DEFAULT_SETTINGS: CommandSettings = {
@@ -41,4 +43,5 @@ export const DEFAULT_SETTINGS: CommandSettings = {
 	showCodeBlockCounts: false,
 	confirmOnComplete: false,
 	confirmOnDelete: true,
+	showAddButtonInInteractive: true,
 };

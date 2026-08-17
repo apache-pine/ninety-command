@@ -6,7 +6,7 @@ Create, track, and manage your [Ninety.io](https://www.ninety.io/) Issues, To-Do
 
 - **Command palette** — create Issues, To-Dos, and Rocks (prefilled from any text you have selected), and add Milestones to a Rock.
 - **Sidebar panel** — Issues, To-Dos, Rocks, and Scorecard for your default team, each row with quick complete / edit / delete actions. Filter by assignee live in the panel, or set a default in Settings.
-- **Code block embeds** — `ninety-issues`, `ninety-todos`, and `ninety-rocks` blocks render live lists inline in a note, with an extensive set of filters (team, assignee, status, completed/archived, search, sort, and more — see [Code block reference](#code-block-reference) below). Add `interactive: true` to any block to get the same complete/edit/delete actions as the sidebar, right inside your note.
+- **Code block embeds** — `ninety-issues`, `ninety-todos`, and `ninety-rocks` blocks render live lists inline in a note, with an extensive set of filters (team, assignee, status, completed/archived, search, sort, and more — see [Code block reference](#code-block-reference) below). Add `interactive: true` to any block to get the same complete/edit/delete actions as the sidebar, right inside your note, plus a header button for adding a new item (`addbutton: true` adds just that button on its own).
 - **Settings** — a full parameter reference for every code block type is also built into Settings → Ninety Command, so you don't have to leave Obsidian to look it up.
 
 Not covered, because the Ninety.io **Public API** doesn't expose it: L10 meetings, the Vision/Traction Organizer, the Accountability Chart, and comments/attachments. This plugin is a strong day-to-day tracking and quick-capture tool, not a full replacement for the Ninety.io web app.
@@ -50,7 +50,8 @@ completed: false
 | `team` | Team name or id; comma-separated for multiple | Configured default team | Only Issues supports multiple teams in one block |
 | `limit` | Positive integer | Settings → Default item limit | |
 | `maxheight` | Positive integer (pixels), e.g. `maxheight: 400` | no limit — block grows to fit all rows | Makes the item list scrollable instead of the block growing indefinitely. The header stays fixed. |
-| `interactive` | `true` / `false` | `false` | Adds complete/edit/delete buttons to each row. Off by default so existing blocks are never silently made editable. |
+| `interactive` | `true` / `false` | `false` | Adds complete/edit/delete buttons to each row, plus a header add button (unless Settings → "Show add button in interactive code blocks" is off). Off by default so existing blocks are never silently made editable. |
+| `addbutton` | `true` / `false` | `false` | Adds a header button for creating a new item, independent of `interactive`. If `interactive` already shows the add button, this has no additional effect. |
 | `interval` | `short_term` / `long_term` | both | |
 | `completed` | `true` / `false` / `any` | `false` | Client-side filter — no server support |
 | `archived` | `true` / `false` / `any` | `false` | Client-side filter — no server support |
@@ -71,7 +72,8 @@ completed: false
 | `personal` | `false` | `false` | `true` always errors — confirmed against the live API, Ninety has no working way to list personal To-Dos. Use `id:` instead if you know the To-Do's id. |
 | `limit` | Positive integer | Settings → Default item limit | |
 | `maxheight` | Positive integer (pixels), e.g. `maxheight: 400` | no limit — block grows to fit all rows | Makes the item list scrollable instead of the block growing indefinitely. The header stays fixed. |
-| `interactive` | `true` / `false` | `false` | Adds complete/edit/delete buttons to each row. Off by default so existing blocks are never silently made editable. |
+| `interactive` | `true` / `false` | `false` | Adds complete/edit/delete buttons to each row, plus a header add button (unless Settings → "Show add button in interactive code blocks" is off). Off by default so existing blocks are never silently made editable. |
+| `addbutton` | `true` / `false` | `false` | Adds a header button for creating a new item, independent of `interactive`. If `interactive` already shows the add button, this has no additional effect. |
 | `completed` | `true` / `false` / `any` | `false` | Server-side filter |
 | `archived` | `true` / `false` / `any` | `false` | Server-side filter |
 | `assignee` / `owner`, `assignees` / `owners` | Name, email, or id (comma-separated for a list) | no filter | Client-side filter — no server support, unlike completed/archived |
@@ -90,7 +92,8 @@ completed: false
 | `team` | Team name or id | Configured default team | Single team only |
 | `limit` | Positive integer | Settings → Default item limit | |
 | `maxheight` | Positive integer (pixels), e.g. `maxheight: 400` | no limit — block grows to fit all rows | Makes the item list scrollable instead of the block growing indefinitely. The header stays fixed. |
-| `interactive` | `true` / `false` | `false` | Adds complete/edit/delete buttons to each row. Off by default so existing blocks are never silently made editable. |
+| `interactive` | `true` / `false` | `false` | Adds complete/edit/delete buttons to each row, plus a header add button (unless Settings → "Show add button in interactive code blocks" is off). Off by default so existing blocks are never silently made editable. |
+| `addbutton` | `true` / `false` | `false` | Adds a header button for creating a new item, independent of `interactive`. If `interactive` already shows the add button, this has no additional effect. |
 | `status` | `off_track` / `on_track` / `done` / `canceled` / `draft` | active only (excludes done & canceled) | An explicit status skips the default active-only filter |
 | `level` | `user` / `company_and_department` / `company` / `department` | all levels | |
 | `futurescope` | `current` / `next` / `later` / `future` / `all` | unset | |
@@ -113,6 +116,7 @@ This same table is also available inside Obsidian, under **Settings → Ninety C
 - **Auto-refresh panel** — optionally refresh the sidebar panel on an interval while it's open.
 - **Default item limit** — default row count for the sidebar and any code block without its own `limit:`.
 - **Show item counts in code blocks** — displays a count of rendered items next to each code block's title.
+- **Show add button in interactive code blocks** — on by default; adds a header button to `interactive: true` code blocks for creating a new item, same as the add button in the sidebar panel. Doesn't affect the standalone `addbutton:` param, which always shows the button.
 - **Confirm before completing** — off by default; turn on if you'd rather confirm before the complete/mark-done row action runs, in the sidebar and in interactive code blocks.
 - **Confirm before deleting** — on by default; turn off if you're confident you won't hit delete by accident, in the sidebar and in interactive code blocks.
 - **Cached data** — teams and users are cached locally; "Refresh now" re-fetches both (needed before the Default assignee dropdown has anything to choose from).

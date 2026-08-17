@@ -43,6 +43,7 @@ export class CommandSettingTab extends PluginSettingTab {
 		this.renderAutoRefreshSetting(containerEl);
 		this.renderDefaultLimitSetting(containerEl);
 		this.renderShowCountsSetting(containerEl);
+		this.renderShowAddButtonSetting(containerEl);
 		this.renderConfirmCompleteSetting(containerEl);
 		this.renderConfirmDeleteSetting(containerEl);
 		this.renderCacheSetting(containerEl);
@@ -288,6 +289,21 @@ export class CommandSettingTab extends PluginSettingTab {
 			.addToggle((toggle) => {
 				toggle.setValue(this.plugin.settings.showCodeBlockCounts).onChange(async (value) => {
 					this.plugin.settings.showCodeBlockCounts = value;
+					await this.plugin.saveSettings();
+				});
+			});
+	}
+
+	private renderShowAddButtonSetting(containerEl: HTMLElement): void {
+		new Setting(containerEl)
+			.setName("Show add button in interactive code blocks")
+			.setDesc(
+				"Adds a header button to interactive: true code blocks for creating a new item, same as the add button in the sidebar panel. " +
+					"Doesn't affect the standalone addbutton: param, which always shows the button.",
+			)
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.showAddButtonInInteractive).onChange(async (value) => {
+					this.plugin.settings.showAddButtonInInteractive = value;
 					await this.plugin.saveSettings();
 				});
 			});

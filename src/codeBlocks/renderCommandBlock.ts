@@ -26,6 +26,14 @@ export interface CommandBlockConfig<T, TContext extends BlockContext = BlockCont
 	fetch: (plugin: CommandPlugin, context: TContext, limit: number, params: Record<string, string>) => Promise<QueryResult<T>>;
 	/** Only called when the block sets `interactive: true` — adds complete/edit/delete buttons to each row. */
 	renderActions?: (plugin: CommandPlugin, item: T, actionsEl: HTMLElement, onChanged: () => void) => void;
+	/** aria-label/tooltip for the header add button, e.g. "Add Issue". Required for the add button to render at all. */
+	addButtonLabel?: string;
+	/**
+	 * Opens this resource's "create" modal, mirroring the command-palette add command. Shown in the
+	 * header when the block sets `addbutton: true`, or `interactive: true` with the
+	 * "Show add button in interactive code blocks" setting on.
+	 */
+	onAddClick?: (plugin: CommandPlugin, onCreated: () => void) => void;
 }
 
 export function registerCommandCodeBlock<T, TContext extends BlockContext>(
@@ -74,6 +82,15 @@ class CommandBlockRenderChild<T, TContext extends BlockContext> extends Markdown
 
 		const actionsEl = headerEl.createDiv({ cls: "ninety-command-codeblock-actions" });
 
+		if (this.showAddButton()) {
+			const addBtn = actionsEl.createEl("button", {
+				cls: "clickable-icon",
+				attr: { "aria-label": this.config.addButtonLabel ?? "Add" },
+			});
+			setIcon(addBtn, "plus");
+			addBtn.addEventListener("click", () => this.config.onAddClick?.(this.plugin, () => void this.render()));
+		}
+
 		const refreshBtn = actionsEl.createEl("button", { cls: "clickable-icon", attr: { "aria-label": "Refresh" } });
 		setIcon(refreshBtn, "refresh-cw");
 		refreshBtn.addEventListener("click", () => void this.render());
@@ -88,6 +105,21 @@ class CommandBlockRenderChild<T, TContext extends BlockContext> extends Markdown
 		this.listEl = wrapper.createDiv({ cls: "ninety-command-section-list" });
 
 		void this.render();
+	}
+
+	/**
+	 * Static for this block instance's lifetime — `interactive`/`addbutton`/the source
+	 * text never change after the block is parsed, so this is safe to compute once in
+	 * onload() rather than on every render().
+	 */
+	private showAddButton(): boolean {
+		if (!this.config.onAddClick) return false;
+
+		const params = parseBlockParams(this.source);
+		if (parseTriStateBool(params.addbutton, false) === true) return true;
+
+		const interactive = parseTriStateBool(params.interactive, false) === true;
+		return interactive && this.plugin.settings.showAddButtonInInteractive;
 	}
 
 	private async render(): Promise<void> {
