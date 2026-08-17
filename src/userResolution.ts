@@ -97,3 +97,23 @@ export async function resolveAssigneeFilterParam(
 
 	return null;
 }
+
+/**
+ * Resolves the same assignee/owner param(s) already used to filter a code block's
+ * rows, for pre-filling the add button's create-modal Assignee field. Unlike
+ * resolveAssigneeFilterParam, this never throws — an unresolvable or absent value
+ * just means "don't prefill," not a block-breaking error, since the add button's
+ * job is to open a blank-ish form, not to enforce the filter.
+ */
+export async function resolveAddButtonDefaultAssignee(
+	plugin: CommandPlugin,
+	params: Record<string, string>,
+): Promise<string | undefined> {
+	if (!plugin.settings.prefillAssigneeOnAdd) return undefined;
+	try {
+		const userIds = await resolveAssigneeFilterParam(plugin, params);
+		return userIds?.[0];
+	} catch {
+		return undefined;
+	}
+}

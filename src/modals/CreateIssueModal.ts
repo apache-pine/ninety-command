@@ -10,7 +10,9 @@ import { htmlDescriptionToEditable } from "../utils/html";
 import type { CapturePrefill } from "../utils/prefill";
 import { addTeamDropdown, addUserDropdown, runSubmit } from "./formHelpers";
 
-export type IssueModalMode = { mode: "create"; prefill: CapturePrefill } | { mode: "edit"; issue: IssueResponseDTO };
+export type IssueModalMode =
+	| { mode: "create"; prefill: CapturePrefill; defaultUserId?: string }
+	| { mode: "edit"; issue: IssueResponseDTO };
 
 export class CreateIssueModal extends Modal {
 	private title: string;
@@ -30,6 +32,7 @@ export class CreateIssueModal extends Modal {
 		if (modeOpts.mode === "create") {
 			this.title = modeOpts.prefill.title;
 			this.description = modeOpts.prefill.description;
+			this.userId = modeOpts.defaultUserId ?? "";
 		} else {
 			this.title = modeOpts.issue.title;
 			this.description = htmlDescriptionToEditable(modeOpts.issue.description);
@@ -107,9 +110,14 @@ export class CreateIssueModal extends Modal {
 		// The API gives no way to reassign an Issue's owner via update — Assignee
 		// only makes sense at creation time.
 		if (!isEdit) {
-			addUserDropdown(new Setting(contentEl).setName("Assignee"), users, (userId) => {
-				this.userId = userId;
-			});
+			addUserDropdown(
+				new Setting(contentEl).setName("Assignee"),
+				users,
+				(userId) => {
+					this.userId = userId;
+				},
+				this.userId,
+			);
 		}
 
 		new Setting(contentEl).addButton((btn) => {

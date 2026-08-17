@@ -27,6 +27,8 @@ export interface CommandSettings {
 	confirmOnDelete: boolean;
 	/** Shows a header "add item" button on `interactive: true` code blocks. On by default. Doesn't affect the standalone `addbutton:` param, which always shows the button regardless of this setting. */
 	showAddButtonInInteractive: boolean;
+	/** Pre-fills the create modal's Assignee field from the code block's assignee/owner param when the add button is used. On by default. Doesn't apply to Rocks — the API always sets a new Rock's owner to the creator, so its create modal has no Assignee field to prefill. */
+	prefillAssigneeOnAdd: boolean;
 }
 
 export const DEFAULT_SETTINGS: CommandSettings = {
@@ -44,4 +46,5 @@ export const DEFAULT_SETTINGS: CommandSettings = {
 	confirmOnComplete: false,
 	confirmOnDelete: true,
 	showAddButtonInInteractive: true,
+	prefillAssigneeOnAdd: true,
 };

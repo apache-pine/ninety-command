@@ -8,6 +8,7 @@ import {
 import { describeApiError, CommandApiError } from "../api/errors";
 import type CommandPlugin from "../main";
 import type { QueryResult } from "../queries";
+import { resolveAddButtonDefaultAssignee } from "../userResolution";
 import { parseBlockParams, parseTriStateBool } from "../utils/blockParams";
 import { BlockParamError } from "./blockErrors";
 
@@ -31,9 +32,12 @@ export interface CommandBlockConfig<T, TContext extends BlockContext = BlockCont
 	/**
 	 * Opens this resource's "create" modal, mirroring the command-palette add command. Shown in the
 	 * header when the block sets `addbutton: true`, or `interactive: true` with the
-	 * "Show add button in interactive code blocks" setting on.
+	 * "Show add button in interactive code blocks" setting on. `defaultAssigneeUserId`, if given, is
+	 * the block's resolved assignee/owner param, for resources that support pre-filling it (see the
+	 * "Prefill assignee when adding from a code block" setting) — resources that don't (Rocks) can
+	 * just ignore the third argument.
 	 */
-	onAddClick?: (plugin: CommandPlugin, onCreated: () => void) => void;
+	onAddClick?: (plugin: CommandPlugin, onCreated: () => void, defaultAssigneeUserId?: string) => void;
 }
 
 export function registerCommandCodeBlock<T, TContext extends BlockContext>(
@@ -88,7 +92,13 @@ class CommandBlockRenderChild<T, TContext extends BlockContext> extends Markdown
 				attr: { "aria-label": this.config.addButtonLabel ?? "Add" },
 			});
 			setIcon(addBtn, "plus");
-			addBtn.addEventListener("click", () => this.config.onAddClick?.(this.plugin, () => void this.render()));
+			addBtn.addEventListener("click", () => {
+				void (async () => {
+					const params = parseBlockParams(this.source);
+					const defaultAssigneeUserId = await resolveAddButtonDefaultAssignee(this.plugin, params);
+					this.config.onAddClick?.(this.plugin, () => void this.render(), defaultAssigneeUserId);
+				})();
+			});
 		}
 
 		const refreshBtn = actionsEl.createEl("button", { cls: "clickable-icon", attr: { "aria-label": "Refresh" } });

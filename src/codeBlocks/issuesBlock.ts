@@ -16,8 +16,13 @@ export function registerIssuesCodeBlock(plugin: CommandPlugin): void {
 		fetch: queryIssuesForBlock,
 		renderActions: renderIssueRowActions,
 		addButtonLabel: "Add Issue",
-		onAddClick: (plugin, onCreated) => {
-			new CreateIssueModal(plugin.app, plugin, { mode: "create", prefill: getPrefillFromSelection(plugin.app) }, onCreated).open();
+		onAddClick: (plugin, onCreated, defaultAssigneeUserId) => {
+			new CreateIssueModal(
+				plugin.app,
+				plugin,
+				{ mode: "create", prefill: getPrefillFromSelection(plugin.app), defaultUserId: defaultAssigneeUserId },
+				onCreated,
+			).open();
 		},
 	});
 }

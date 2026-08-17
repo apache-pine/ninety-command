@@ -44,6 +44,7 @@ export class CommandSettingTab extends PluginSettingTab {
 		this.renderDefaultLimitSetting(containerEl);
 		this.renderShowCountsSetting(containerEl);
 		this.renderShowAddButtonSetting(containerEl);
+		this.renderPrefillAssigneeSetting(containerEl);
 		this.renderConfirmCompleteSetting(containerEl);
 		this.renderConfirmDeleteSetting(containerEl);
 		this.renderCacheSetting(containerEl);
@@ -304,6 +305,21 @@ export class CommandSettingTab extends PluginSettingTab {
 			.addToggle((toggle) => {
 				toggle.setValue(this.plugin.settings.showAddButtonInInteractive).onChange(async (value) => {
 					this.plugin.settings.showAddButtonInInteractive = value;
+					await this.plugin.saveSettings();
+				});
+			});
+	}
+
+	private renderPrefillAssigneeSetting(containerEl: HTMLElement): void {
+		new Setting(containerEl)
+			.setName("Prefill assignee when adding from a code block")
+			.setDesc(
+				"When a code block's add button opens the create form, pre-fills Assignee from that block's assignee: / owner: param, if set. Still editable. " +
+					"Doesn't apply to Rocks — the API always sets a new Rock's owner to you, the creator, so its create form has no Assignee field to prefill.",
+			)
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.prefillAssigneeOnAdd).onChange(async (value) => {
+					this.plugin.settings.prefillAssigneeOnAdd = value;
 					await this.plugin.saveSettings();
 				});
 			});

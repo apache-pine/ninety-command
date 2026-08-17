@@ -8,7 +8,9 @@ import type CommandPlugin from "../main";
 import type { CapturePrefill } from "../utils/prefill";
 import { addDateField, addTeamDropdown, addUserDropdown, runSubmit } from "./formHelpers";
 
-export type TodoModalMode = { mode: "create"; prefill: CapturePrefill } | { mode: "edit"; todo: TodoResponseDTO };
+export type TodoModalMode =
+	| { mode: "create"; prefill: CapturePrefill; defaultUserId?: string }
+	| { mode: "edit"; todo: TodoResponseDTO };
 
 const REPEAT_OPTIONS: TodoRepeat[] = ["Don't repeat", "Daily", "Weekly", "Monthly", "Quarterly"];
 
@@ -39,7 +41,7 @@ export class CreateTodoModal extends Modal {
 			this.dueDate = "";
 			this.teamId = "";
 			this.repeat = "Don't repeat";
-			this.userId = "";
+			this.userId = modeOpts.defaultUserId ?? "";
 		} else {
 			this.title = modeOpts.todo.title;
 			this.description = modeOpts.todo.description ?? "";
@@ -113,7 +115,7 @@ export class CreateTodoModal extends Modal {
 			(userId) => {
 				this.userId = userId;
 			},
-			isEdit ? this.userId : undefined,
+			this.userId,
 		);
 
 		new Setting(contentEl).addButton((btn) => {

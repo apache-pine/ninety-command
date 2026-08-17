@@ -117,6 +117,7 @@ This same table is also available inside Obsidian, under **Settings → Ninety C
 - **Default item limit** — default row count for the sidebar and any code block without its own `limit:`.
 - **Show item counts in code blocks** — displays a count of rendered items next to each code block's title.
 - **Show add button in interactive code blocks** — on by default; adds a header button to `interactive: true` code blocks for creating a new item, same as the add button in the sidebar panel. Doesn't affect the standalone `addbutton:` param, which always shows the button.
+- **Prefill assignee when adding from a code block** — on by default; when a code block's add button opens the create form, pre-fills Assignee from that block's `assignee:` / `owner:` param, if set (still editable). Doesn't apply to Rocks — the API always sets a new Rock's owner to you, the creator, so its create form has no Assignee field to prefill.
 - **Confirm before completing** — off by default; turn on if you'd rather confirm before the complete/mark-done row action runs, in the sidebar and in interactive code blocks.
 - **Confirm before deleting** — on by default; turn off if you're confident you won't hit delete by accident, in the sidebar and in interactive code blocks.
 - **Cached data** — teams and users are cached locally; "Refresh now" re-fetches both (needed before the Default assignee dropdown has anything to choose from).
