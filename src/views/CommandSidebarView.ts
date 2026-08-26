@@ -4,9 +4,6 @@ import type { RockResponseDTO } from "../api/resources/rocks";
 import type { TodoResponseDTO } from "../api/resources/todos";
 import { ensureUsersCache } from "../cache";
 import type CommandPlugin from "../main";
-import { CreateIssueModal } from "../modals/CreateIssueModal";
-import { CreateRockModal } from "../modals/CreateRockModal";
-import { CreateTodoModal } from "../modals/CreateTodoModal";
 import { EnterScoreModal } from "../modals/EnterScoreModal";
 import { queryActiveRocks, queryOpenIssues, queryOpenTodos } from "../queries";
 import { renderIssueRow, renderRockRow, renderTodoRow } from "../rendering";
@@ -14,6 +11,9 @@ import { renderIssueRowActions, renderRockRowActions, renderTodoRowActions } fro
 import { getPrefillFromSelection } from "../utils/prefill";
 import { CommandScorecardSection } from "./CommandScorecardSection";
 import { CommandSection } from "./CommandSection";
+import { openIssueForm } from "./IssueFormView";
+import { openRockForm } from "./RockFormView";
+import { openTodoForm } from "./TodoFormView";
 
 export const COMMAND_VIEW_TYPE = "ninety-command-command-panel";
 
@@ -216,20 +216,20 @@ export class CommandSidebarView extends ItemView {
 	}
 
 	private openCreateIssue(): void {
-		new CreateIssueModal(this.app, this.plugin, { mode: "create", prefill: getPrefillFromSelection(this.app) }, () => {
+		openIssueForm(this.app, this.plugin, { mode: "create", prefill: getPrefillFromSelection(this.app) }, () => {
 			void this.issuesSection.refresh();
-		}).open();
+		});
 	}
 
 	private openCreateTodo(): void {
-		new CreateTodoModal(this.app, this.plugin, { mode: "create", prefill: getPrefillFromSelection(this.app) }, () => {
+		openTodoForm(this.app, this.plugin, { mode: "create", prefill: getPrefillFromSelection(this.app) }, () => {
 			void this.todosSection.refresh();
-		}).open();
+		});
 	}
 
 	private openCreateRock(): void {
-		new CreateRockModal(this.app, this.plugin, { mode: "create", prefill: getPrefillFromSelection(this.app) }, () => {
+		openRockForm(this.app, this.plugin, { mode: "create", prefill: getPrefillFromSelection(this.app) }, () => {
 			void this.rocksSection.refresh();
-		}).open();
+		});
 	}
 }

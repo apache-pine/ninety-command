@@ -1,8 +1,8 @@
 import type CommandPlugin from "../main";
-import { CreateIssueModal } from "../modals/CreateIssueModal";
 import { renderIssueRow } from "../rendering";
 import { renderIssueRowActions } from "../rowActionRenderers";
 import { getPrefillFromSelection } from "../utils/prefill";
+import { openIssueForm } from "../views/IssueFormView";
 import { queryIssuesForBlock, resolveIssuesContext } from "./blockQueries";
 import { registerCommandCodeBlock } from "./renderCommandBlock";
 
@@ -17,12 +17,12 @@ export function registerIssuesCodeBlock(plugin: CommandPlugin): void {
 		renderActions: renderIssueRowActions,
 		addButtonLabel: "Add Issue",
 		onAddClick: (plugin, onCreated, defaultAssigneeUserId) => {
-			new CreateIssueModal(
+			openIssueForm(
 				plugin.app,
 				plugin,
 				{ mode: "create", prefill: getPrefillFromSelection(plugin.app), defaultUserId: defaultAssigneeUserId },
 				onCreated,
-			).open();
+			);
 		},
 	});
 }

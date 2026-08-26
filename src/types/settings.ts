@@ -29,6 +29,8 @@ export interface CommandSettings {
 	showAddButtonInInteractive: boolean;
 	/** Pre-fills the create modal's Assignee field from the code block's assignee/owner param when the add button is used. On by default. Doesn't apply to Rocks — the API always sets a new Rock's owner to the creator, so its create modal has no Assignee field to prefill. */
 	prefillAssigneeOnAdd: boolean;
+	/** Opens create/edit forms as movable, independent pop-out windows instead of blocking modals. Desktop only — always falls back to a modal on mobile, regardless of this setting. On by default. */
+	openFormsAsPopout: boolean;
 }
 
 export const DEFAULT_SETTINGS: CommandSettings = {
@@ -47,4 +49,5 @@ export const DEFAULT_SETTINGS: CommandSettings = {
 	confirmOnDelete: true,
 	showAddButtonInInteractive: true,
 	prefillAssigneeOnAdd: true,
+	openFormsAsPopout: true,
 };

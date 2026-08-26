@@ -5,15 +5,15 @@ import { ensureTeamsCache } from "./cache";
 import { registerIssuesCodeBlock } from "./codeBlocks/issuesBlock";
 import { registerRocksCodeBlock } from "./codeBlocks/rocksBlock";
 import { registerTodosCodeBlock } from "./codeBlocks/todosBlock";
-import { CreateIssueModal } from "./modals/CreateIssueModal";
-import { CreateMilestoneModal } from "./modals/CreateMilestoneModal";
-import { CreateRockModal } from "./modals/CreateRockModal";
-import { CreateTodoModal } from "./modals/CreateTodoModal";
 import { RockPickerModal } from "./modals/RockPickerModal";
 import { CommandSettingTab } from "./settings";
 import { DEFAULT_SETTINGS, type CommandSettings } from "./types/settings";
 import { getPrefillFromSelection } from "./utils/prefill";
 import { COMMAND_VIEW_TYPE, CommandSidebarView } from "./views/CommandSidebarView";
+import { ISSUE_FORM_VIEW_TYPE, IssueFormView, openIssueForm } from "./views/IssueFormView";
+import { MILESTONE_FORM_VIEW_TYPE, MilestoneFormView, openMilestoneForm } from "./views/MilestoneFormView";
+import { ROCK_FORM_VIEW_TYPE, RockFormView, openRockForm } from "./views/RockFormView";
+import { TODO_FORM_VIEW_TYPE, TodoFormView, openTodoForm } from "./views/TodoFormView";
 
 export default class CommandPlugin extends Plugin {
 	settings!: CommandSettings;
@@ -29,6 +29,10 @@ export default class CommandPlugin extends Plugin {
 		this.registerCommands();
 
 		this.registerView(COMMAND_VIEW_TYPE, (leaf) => new CommandSidebarView(leaf, this));
+		this.registerView(TODO_FORM_VIEW_TYPE, (leaf) => new TodoFormView(leaf, this));
+		this.registerView(ISSUE_FORM_VIEW_TYPE, (leaf) => new IssueFormView(leaf, this));
+		this.registerView(ROCK_FORM_VIEW_TYPE, (leaf) => new RockFormView(leaf, this));
+		this.registerView(MILESTONE_FORM_VIEW_TYPE, (leaf) => new MilestoneFormView(leaf, this));
 		this.addRibbonIcon("layout-list", "Open Ninety Command panel", () => {
 			void this.activateView();
 		});
@@ -49,6 +53,10 @@ export default class CommandPlugin extends Plugin {
 
 	onunload(): void {
 		this.app.workspace.detachLeavesOfType(COMMAND_VIEW_TYPE);
+		this.app.workspace.detachLeavesOfType(TODO_FORM_VIEW_TYPE);
+		this.app.workspace.detachLeavesOfType(ISSUE_FORM_VIEW_TYPE);
+		this.app.workspace.detachLeavesOfType(ROCK_FORM_VIEW_TYPE);
+		this.app.workspace.detachLeavesOfType(MILESTONE_FORM_VIEW_TYPE);
 	}
 
 	async loadSettings(): Promise<void> {
@@ -65,7 +73,7 @@ export default class CommandPlugin extends Plugin {
 			name: "Create Issue",
 			callback: () => {
 				if (!this.requireToken()) return;
-				new CreateIssueModal(this.app, this, { mode: "create", prefill: getPrefillFromSelection(this.app) }).open();
+				openIssueForm(this.app, this, { mode: "create", prefill: getPrefillFromSelection(this.app) });
 			},
 		});
 
@@ -74,7 +82,7 @@ export default class CommandPlugin extends Plugin {
 			name: "Create To-Do",
 			callback: () => {
 				if (!this.requireToken()) return;
-				new CreateTodoModal(this.app, this, { mode: "create", prefill: getPrefillFromSelection(this.app) }).open();
+				openTodoForm(this.app, this, { mode: "create", prefill: getPrefillFromSelection(this.app) });
 			},
 		});
 
@@ -83,7 +91,7 @@ export default class CommandPlugin extends Plugin {
 			name: "Create Rock",
 			callback: () => {
 				if (!this.requireToken()) return;
-				new CreateRockModal(this.app, this, { mode: "create", prefill: getPrefillFromSelection(this.app) }).open();
+				openRockForm(this.app, this, { mode: "create", prefill: getPrefillFromSelection(this.app) });
 			},
 		});
 
@@ -177,7 +185,7 @@ export default class CommandPlugin extends Plugin {
 
 			const prefill = getPrefillFromSelection(this.app);
 			new RockPickerModal(this.app, page.items, teams, (rock) => {
-				new CreateMilestoneModal(this.app, this, rock, prefill).open();
+				openMilestoneForm(this.app, this, rock, prefill);
 			}).open();
 		} catch (err) {
 			notice.hide();

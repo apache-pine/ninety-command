@@ -3,6 +3,15 @@ import { describeApiError, CommandApiError } from "../api/errors";
 import type { AvailableTeamResponseDTO } from "../api/resources/teams";
 import type { CompanyUserResponseDTO } from "../api/resources/users";
 
+/**
+ * Widens a Setting's text/textarea control to fill available space, and
+ * gives textareas a taller default height. Used for title/description
+ * fields, which routinely run longer than Obsidian's default input width.
+ */
+export function widenField(setting: Setting): void {
+	setting.settingEl.addClass("ninety-command-wide-setting");
+}
+
 /** Wires a native date input onto a Setting's text component. */
 export function addDateField(setting: Setting, initialValue: string, onChange: (value: string) => void): void {
 	setting.addText((text) => {

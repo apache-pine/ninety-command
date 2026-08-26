@@ -3,11 +3,11 @@ import type { IssueResponseDTO } from "./api/resources/issues";
 import type { RockResponseDTO } from "./api/resources/rocks";
 import type { TodoResponseDTO } from "./api/resources/todos";
 import { confirmAction } from "./modals/ConfirmModal";
-import { CreateIssueModal } from "./modals/CreateIssueModal";
-import { CreateRockModal } from "./modals/CreateRockModal";
-import { CreateTodoModal } from "./modals/CreateTodoModal";
 import { runRowAction } from "./modals/rowActions";
 import type CommandPlugin from "./main";
+import { openIssueForm } from "./views/IssueFormView";
+import { openRockForm } from "./views/RockFormView";
+import { openTodoForm } from "./views/TodoFormView";
 
 /**
  * Shared complete/edit/delete row-action builders, used by both the sidebar
@@ -46,7 +46,7 @@ export function renderIssueRowActions(
 
 	const editBtn = addRowActionButton(actionsEl, "pencil", "Edit");
 	editBtn.addEventListener("click", () => {
-		new CreateIssueModal(plugin.app, plugin, { mode: "edit", issue }, onChanged).open();
+		openIssueForm(plugin.app, plugin, { mode: "edit", issue }, onChanged);
 	});
 
 	const deleteBtn = addRowActionButton(actionsEl, "trash-2", "Delete");
@@ -88,7 +88,7 @@ export function renderTodoRowActions(
 
 	const editBtn = addRowActionButton(actionsEl, "pencil", "Edit");
 	editBtn.addEventListener("click", () => {
-		new CreateTodoModal(plugin.app, plugin, { mode: "edit", todo }, onChanged).open();
+		openTodoForm(plugin.app, plugin, { mode: "edit", todo }, onChanged);
 	});
 
 	const deleteBtn = addRowActionButton(actionsEl, "trash-2", "Delete");
@@ -130,7 +130,7 @@ export function renderRockRowActions(
 
 	const editBtn = addRowActionButton(actionsEl, "pencil", "Edit");
 	editBtn.addEventListener("click", () => {
-		new CreateRockModal(plugin.app, plugin, { mode: "edit", rock }, onChanged).open();
+		openRockForm(plugin.app, plugin, { mode: "edit", rock }, onChanged);
 	});
 
 	const deleteBtn = addRowActionButton(actionsEl, "trash-2", "Delete");

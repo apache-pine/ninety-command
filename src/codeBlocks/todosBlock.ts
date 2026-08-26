@@ -1,8 +1,8 @@
 import type CommandPlugin from "../main";
-import { CreateTodoModal } from "../modals/CreateTodoModal";
 import { renderTodoRow } from "../rendering";
 import { renderTodoRowActions } from "../rowActionRenderers";
 import { getPrefillFromSelection } from "../utils/prefill";
+import { openTodoForm } from "../views/TodoFormView";
 import { queryTodosForBlock, resolveTodosContext } from "./blockQueries";
 import { registerCommandCodeBlock } from "./renderCommandBlock";
 
@@ -17,12 +17,12 @@ export function registerTodosCodeBlock(plugin: CommandPlugin): void {
 		renderActions: renderTodoRowActions,
 		addButtonLabel: "Add To-Do",
 		onAddClick: (plugin, onCreated, defaultAssigneeUserId) => {
-			new CreateTodoModal(
+			openTodoForm(
 				plugin.app,
 				plugin,
 				{ mode: "create", prefill: getPrefillFromSelection(plugin.app), defaultUserId: defaultAssigneeUserId },
 				onCreated,
-			).open();
+			);
 		},
 	});
 }

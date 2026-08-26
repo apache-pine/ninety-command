@@ -19,6 +19,22 @@
 	color: var(--text-muted);
 }
 
+/* Widens a Setting's text/textarea control — the default Obsidian input is
+   too cramped for titles/descriptions, which routinely run longer than it. */
+.ninety-command-wide-setting .setting-item-control {
+	flex: 1 1 auto;
+}
+
+.ninety-command-wide-setting .setting-item-control input[type="text"],
+.ninety-command-wide-setting .setting-item-control textarea {
+	width: 100%;
+	max-width: none;
+}
+
+.ninety-command-wide-setting .setting-item-control textarea {
+	min-height: 120px;
+}
+
 .ninety-command-picker-sub {
 	font-size: var(--font-ui-smaller);
 	color: var(--text-muted);

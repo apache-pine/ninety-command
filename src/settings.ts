@@ -45,6 +45,7 @@ export class CommandSettingTab extends PluginSettingTab {
 		this.renderShowCountsSetting(containerEl);
 		this.renderShowAddButtonSetting(containerEl);
 		this.renderPrefillAssigneeSetting(containerEl);
+		this.renderOpenFormsAsPopoutSetting(containerEl);
 		this.renderConfirmCompleteSetting(containerEl);
 		this.renderConfirmDeleteSetting(containerEl);
 		this.renderCacheSetting(containerEl);
@@ -320,6 +321,21 @@ export class CommandSettingTab extends PluginSettingTab {
 			.addToggle((toggle) => {
 				toggle.setValue(this.plugin.settings.prefillAssigneeOnAdd).onChange(async (value) => {
 					this.plugin.settings.prefillAssigneeOnAdd = value;
+					await this.plugin.saveSettings();
+				});
+			});
+	}
+
+	private renderOpenFormsAsPopoutSetting(containerEl: HTMLElement): void {
+		new Setting(containerEl)
+			.setName("Open create/edit forms as pop-out windows")
+			.setDesc(
+				"Opens Issue/To-Do/Rock/Milestone create and edit forms as their own movable window, instead of a popup that blocks the rest of Obsidian. " +
+					"Lets you keep a note open for reference while filling in the form. Desktop only — always falls back to the in-window popup on mobile.",
+			)
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.openFormsAsPopout).onChange(async (value) => {
+					this.plugin.settings.openFormsAsPopout = value;
 					await this.plugin.saveSettings();
 				});
 			});

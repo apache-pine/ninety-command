@@ -1,0 +1,167 @@
+import { Notice, Setting } from "obsidian";
+import { describeApiError, CommandApiError } from "../api/errors";
+import type { AvailableTeamResponseDTO } from "../api/resources/teams";
+import type { TodoRepeat, TodoResponseDTO } from "../api/resources/todos";
+import type { CompanyUserResponseDTO } from "../api/resources/users";
+import { ensureTeamsCache, ensureUsersCache } from "../cache";
+import type CommandPlugin from "../main";
+import type { CapturePrefill } from "../utils/prefill";
+import { addDateField, addTeamDropdown, addUserDropdown, runSubmit, widenField } from "./formHelpers";
+
+export type TodoModalMode =
+	| { mode: "create"; prefill: CapturePrefill; defaultUserId?: string }
+	| { mode: "edit"; todo: TodoResponseDTO };
+
+const REPEAT_OPTIONS: TodoRepeat[] = ["Don't repeat", "Daily", "Weekly", "Monthly", "Quarterly"];
+
+function toDateInputValue(dueDate: string | undefined): string {
+	if (!dueDate) return "";
+	// dueDate comes back as a full ISO datetime; the date input only wants YYYY-MM-DD.
+	return dueDate.slice(0, 10);
+}
+
+/**
+ * Holds the Create/Edit To-Do form's state and rendering logic, independent
+ * of whether it's hosted in a Modal or an ItemView (so the same form can be
+ * shown as a blocking popup or popped out into its own window). `close` is
+ * called on successful submit — the host decides what that means.
+ */
+export class TodoFormController {
+	readonly isEdit: boolean;
+	private title: string;
+	private description: string;
+	private dueDate: string;
+	private teamId: string;
+	private repeat: TodoRepeat;
+	private userId: string;
+
+	constructor(
+		private plugin: CommandPlugin,
+		private modeOpts: TodoModalMode,
+		private onSaved: (() => void) | undefined,
+		private close: () => void,
+	) {
+		this.isEdit = modeOpts.mode === "edit";
+		if (modeOpts.mode === "create") {
+			this.title = modeOpts.prefill.title;
+			this.description = modeOpts.prefill.description;
+			this.dueDate = "";
+			this.teamId = "";
+			this.repeat = "Don't repeat";
+			this.userId = modeOpts.defaultUserId ?? "";
+		} else {
+			this.title = modeOpts.todo.title;
+			this.description = modeOpts.todo.description ?? "";
+			this.dueDate = toDateInputValue(modeOpts.todo.dueDate);
+			this.teamId = modeOpts.todo.teamId ?? "";
+			this.repeat = modeOpts.todo.repeat ?? "Don't repeat";
+			this.userId = modeOpts.todo.userId;
+		}
+	}
+
+	async mount(contentEl: HTMLElement): Promise<void> {
+		contentEl.createEl("h2", { text: this.isEdit ? "Edit To-Do" : "Create To-Do" });
+		const loadingEl = contentEl.createEl("p", { text: "Loading teams…", cls: "ninety-command-modal-loading" });
+
+		try {
+			await Promise.all([ensureTeamsCache(this.plugin), ensureUsersCache(this.plugin)]);
+			loadingEl.remove();
+			this.renderForm(contentEl, this.plugin.settings.teamsCache, this.plugin.settings.usersCache);
+		} catch (err) {
+			const message = err instanceof CommandApiError ? describeApiError(err) : "Ninety Command: failed to load teams.";
+			loadingEl.setText(message);
+		}
+	}
+
+	private renderForm(contentEl: HTMLElement, teams: AvailableTeamResponseDTO[], users: CompanyUserResponseDTO[]): void {
+		const isEdit = this.isEdit;
+
+		widenField(
+			new Setting(contentEl).setName("Title").addText((text) =>
+				text.setValue(this.title).onChange((value) => {
+					this.title = value;
+				}),
+			),
+		);
+
+		widenField(
+			new Setting(contentEl).setName("Description").addTextArea((text) =>
+				text.setValue(this.description).onChange((value) => {
+					this.description = value;
+				}),
+			),
+		);
+
+		addDateField(new Setting(contentEl).setName("Due date").setDesc("Optional."), this.dueDate, (value) => {
+			this.dueDate = value;
+		});
+
+		addTeamDropdown(
+			new Setting(contentEl).setName("Team"),
+			teams,
+			{ defaultTeamId: isEdit ? this.teamId : this.plugin.settings.defaultTeamId, allowPersonal: true },
+			(teamId) => {
+				this.teamId = teamId;
+			},
+		);
+
+		new Setting(contentEl)
+			.setName("Repeat")
+			.setDesc("Recurrence pattern — the API only accepts these five values.")
+			.addDropdown((dropdown) => {
+				for (const option of REPEAT_OPTIONS) {
+					dropdown.addOption(option, option);
+				}
+				dropdown.setValue(this.repeat).onChange((value) => {
+					this.repeat = value as TodoRepeat;
+				});
+			});
+
+		addUserDropdown(
+			new Setting(contentEl).setName("Assignee"),
+			users,
+			(userId) => {
+				this.userId = userId;
+			},
+			this.userId,
+		);
+
+		new Setting(contentEl).addButton((btn) => {
+			btn
+				.setButtonText(isEdit ? "Save Changes" : "Create To-Do")
+				.setCta()
+				.onClick(() => {
+					if (!this.title.trim()) {
+						new Notice("Ninety Command: enter a title.");
+						return;
+					}
+
+					void runSubmit(btn, isEdit ? "Saving…" : "Creating…", async () => {
+						if (this.modeOpts.mode === "edit") {
+							const updated = await this.plugin.apiClient.todos.update(this.modeOpts.todo._id, {
+								title: this.title.trim(),
+								description: this.description || undefined,
+								dueDate: this.dueDate || undefined,
+								teamId: this.teamId || undefined,
+								repeat: this.repeat,
+								userId: this.userId || undefined,
+							});
+							new Notice(`Ninety Command: To-Do "${updated.title}" updated.`);
+						} else {
+							const created = await this.plugin.apiClient.todos.create({
+								title: this.title.trim(),
+								description: this.description || undefined,
+								dueDate: this.dueDate || undefined,
+								teamId: this.teamId || undefined,
+								repeat: this.repeat,
+								userId: this.userId || undefined,
+							});
+							new Notice(`Ninety Command: To-Do "${created.title}" created.`);
+						}
+						this.onSaved?.();
+						this.close();
+					});
+				});
+		});
+	}
+}
