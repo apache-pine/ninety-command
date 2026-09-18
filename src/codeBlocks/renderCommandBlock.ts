@@ -105,11 +105,14 @@ class CommandBlockRenderChild<T, TContext extends BlockContext> extends Markdown
 		setIcon(refreshBtn, "refresh-cw");
 		refreshBtn.addEventListener("click", () => void this.render());
 
+		// Live Preview has its own "Edit this block" button (see styles.css), so this one is
+		// hidden there via CSS — it only shows in reading view, which has no built-in equivalent.
+		// Same icon as Obsidian's built-in button so the two modes look identical.
 		const editBtn = actionsEl.createEl("button", {
-			cls: "clickable-icon",
+			cls: "clickable-icon ninety-command-codeblock-edit",
 			attr: { "aria-label": "Edit this block" },
 		});
-		setIcon(editBtn, "code");
+		setIcon(editBtn, "code-2");
 		editBtn.addEventListener("click", () => void this.openInEditor());
 
 		this.listEl = wrapper.createDiv({ cls: "ninety-command-section-list" });

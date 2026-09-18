@@ -113,10 +113,20 @@
 	color: var(--text-muted);
 }
 
+/* Box metrics shared by the code block and by the Live Preview edit-button
+   positioning further down — the built-in button sits outside our wrapper, so
+   it needs the same numbers to line up with the header row. */
+body {
+	--ninety-cb-margin-y: 8px;
+	--ninety-cb-pad-x: 12px;
+	--ninety-cb-pad-y: 8px;
+	--ninety-cb-border: 1px;
+}
+
 .ninety-command-codeblock {
-	margin: 8px 0;
-	padding: 8px 12px;
-	border: 1px solid var(--background-modifier-border);
+	margin: var(--ninety-cb-margin-y) 0;
+	padding: var(--ninety-cb-pad-y) var(--ninety-cb-pad-x);
+	border: var(--ninety-cb-border) solid var(--background-modifier-border);
 	border-radius: var(--radius-m);
 	background-color: var(--background-secondary);
 	color: var(--text-normal);
@@ -201,6 +211,61 @@
 	align-items: center;
 	gap: 4px;
 	flex-shrink: 0;
+}
+
+/* Live Preview draws Obsidian's own "Edit this block" button
+   (.embed-actions > .embed-action.edit-block-button) over the top-right corner
+   of every code block widget, hidden until hover. For our blocks, restyle it to
+   sit in the header row alongside the other action buttons instead of adding a
+   duplicate. Everything is scoped via :has(.ninety-command-codeblock), so other
+   plugins' and plain code blocks keep the stock button.
+
+   Reading view has no built-in edit button, so our own
+   .ninety-command-codeblock-edit button stays there and is only hidden inside
+   Live Preview widgets. */
+.cm-preview-code-block .ninety-command-codeblock-edit {
+	display: none;
+}
+
+.markdown-source-view.mod-cm6 .cm-preview-code-block:has(.ninety-command-codeblock) {
+	/* Spacing moves from the block's margin to the widget's padding: margins can
+	   collapse through the widget (and switch sides on hover, when Obsidian sets
+	   overflow: hidden), which would make the absolute offset below unreliable. */
+	padding-block: var(--ninety-cb-margin-y);
+}
+
+.markdown-source-view.mod-cm6 .cm-preview-code-block .ninety-command-codeblock {
+	margin-block: 0;
+}
+
+.markdown-source-view.mod-cm6 .cm-preview-code-block:has(.ninety-command-codeblock) .embed-actions {
+	top: calc(var(--ninety-cb-margin-y) + var(--ninety-cb-border) + var(--ninety-cb-pad-y));
+	inset-inline-end: calc(var(--ninety-cb-border) + var(--ninety-cb-pad-x));
+	opacity: 1;
+}
+
+.markdown-source-view.mod-cm6 .cm-preview-code-block:has(.ninety-command-codeblock) .embed-action {
+	color: var(--icon-color);
+}
+
+.markdown-source-view.mod-cm6 .cm-preview-code-block:has(.ninety-command-codeblock) .embed-action svg {
+	opacity: var(--icon-opacity);
+}
+
+@media (hover: hover) {
+	.markdown-source-view.mod-cm6 .cm-preview-code-block:has(.ninety-command-codeblock) .embed-action:hover {
+		color: var(--icon-color-hover);
+	}
+
+	.markdown-source-view.mod-cm6 .cm-preview-code-block:has(.ninety-command-codeblock) .embed-action:hover svg {
+		opacity: var(--icon-opacity-hover);
+	}
+}
+
+/* Reserve room in the header for the built-in button: one button's width
+   (icon + horizontal padding) plus the actions' 4px gap. */
+.markdown-source-view.mod-cm6 .cm-preview-code-block:has(.embed-action) .ninety-command-codeblock-actions {
+	padding-inline-end: calc(var(--icon-size) + 2 * var(--size-2-3) + 4px);
 }
 
 .ninety-command-button {
