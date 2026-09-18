@@ -52,6 +52,8 @@ completed: false
 | `maxheight` | Positive integer (pixels), e.g. `maxheight: 400` | no limit — block grows to fit all rows | Makes the item list scrollable instead of the block growing indefinitely. The header stays fixed. |
 | `interactive` | `true` / `false` | `false` | Adds complete/edit/delete buttons to each row, plus a header add button (unless Settings → "Show add button in interactive code blocks" is off). Off by default so existing blocks are never silently made editable. |
 | `addbutton` | `true` / `false` | `false` | Adds a header button for creating a new item, independent of `interactive`. If `interactive` already shows the add button, this has no additional effect. |
+| `description` | `true` / `false` | `false` | Shows each item's description under its title, keeping its formatting (bold, lists, links, etc.), truncated to Settings → Description line limit (3 by default). Independent of `hover` — the hover card still shows the full text. |
+| `hover` | `true` / `false` | Settings → Show description on hover (on by default) | Shows the item's full description in a card when the mouse rests on its row. Overrides the setting for this block in either direction. Independent of `description`. |
 | `interval` | `short_term` / `long_term` | both | |
 | `completed` | `true` / `false` / `any` | `false` | Client-side filter — no server support |
 | `archived` | `true` / `false` / `any` | `false` | Client-side filter — no server support |
@@ -74,6 +76,8 @@ completed: false
 | `maxheight` | Positive integer (pixels), e.g. `maxheight: 400` | no limit — block grows to fit all rows | Makes the item list scrollable instead of the block growing indefinitely. The header stays fixed. |
 | `interactive` | `true` / `false` | `false` | Adds complete/edit/delete buttons to each row, plus a header add button (unless Settings → "Show add button in interactive code blocks" is off). Off by default so existing blocks are never silently made editable. |
 | `addbutton` | `true` / `false` | `false` | Adds a header button for creating a new item, independent of `interactive`. If `interactive` already shows the add button, this has no additional effect. |
+| `description` | `true` / `false` | `false` | Shows each item's description under its title, keeping its formatting (bold, lists, links, etc.), truncated to Settings → Description line limit (3 by default). Independent of `hover` — the hover card still shows the full text. |
+| `hover` | `true` / `false` | Settings → Show description on hover (on by default) | Shows the item's full description in a card when the mouse rests on its row. Overrides the setting for this block in either direction. Independent of `description`. |
 | `completed` | `true` / `false` / `any` | `false` | Server-side filter |
 | `archived` | `true` / `false` / `any` | `false` | Server-side filter |
 | `assignee` / `owner`, `assignees` / `owners` | Name, email, or id (comma-separated for a list) | no filter | Client-side filter — no server support, unlike completed/archived |
@@ -94,6 +98,8 @@ completed: false
 | `maxheight` | Positive integer (pixels), e.g. `maxheight: 400` | no limit — block grows to fit all rows | Makes the item list scrollable instead of the block growing indefinitely. The header stays fixed. |
 | `interactive` | `true` / `false` | `false` | Adds complete/edit/delete buttons to each row, plus a header add button (unless Settings → "Show add button in interactive code blocks" is off). Off by default so existing blocks are never silently made editable. |
 | `addbutton` | `true` / `false` | `false` | Adds a header button for creating a new item, independent of `interactive`. If `interactive` already shows the add button, this has no additional effect. |
+| `description` | `true` / `false` | `false` | Shows each item's description under its title, keeping its formatting (bold, lists, links, etc.), truncated to Settings → Description line limit (3 by default). Independent of `hover` — the hover card still shows the full text. |
+| `hover` | `true` / `false` | Settings → Show description on hover (on by default) | Shows the item's full description in a card when the mouse rests on its row. Overrides the setting for this block in either direction. Independent of `description`. |
 | `status` | `off_track` / `on_track` / `done` / `canceled` / `draft` | active only (excludes done & canceled) | An explicit status skips the default active-only filter |
 | `level` | `user` / `company_and_department` / `company` / `department` | all levels | |
 | `futurescope` | `current` / `next` / `later` / `future` / `all` | unset | |
@@ -116,6 +122,8 @@ This same table is also available inside Obsidian, under **Settings → Ninety C
 - **Auto-refresh panel** — optionally refresh the sidebar panel on an interval while it's open.
 - **Default item limit** — default row count for the sidebar and any code block without its own `limit:`.
 - **Show item counts in code blocks** — displays a count of rendered items next to each code block's title.
+- **Show description on hover** — on by default; shows an item's full description in a card when you rest the mouse on its row, in code blocks and the sidebar. A code block's `hover:` param overrides this either way. Desktop only.
+- **Description line limit** — how many lines of a description a code block shows (for blocks with `description: true`) before truncating; default 3, `0` shows it all.
 - **Show add button in interactive code blocks** — on by default; adds a header button to `interactive: true` code blocks for creating a new item, same as the add button in the sidebar panel. Doesn't affect the standalone `addbutton:` param, which always shows the button.
 - **Prefill assignee when adding from a code block** — on by default; when a code block's add button opens the create form, pre-fills Assignee from that block's `assignee:` / `owner:` param, if set (still editable). Doesn't apply to Rocks — the API always sets a new Rock's owner to you, the creator, so its create form has no Assignee field to prefill.
 - **Open create/edit forms as pop-out windows** — on by default; opens Issue/To-Do/Rock/Milestone create and edit forms as their own movable window instead of a popup that blocks the rest of Obsidian, so you can keep a note open for reference while filling in the form. Desktop only — always falls back to the in-window popup on mobile.

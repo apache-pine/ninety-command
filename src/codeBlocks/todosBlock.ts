@@ -12,6 +12,7 @@ export function registerTodosCodeBlock(plugin: CommandPlugin): void {
 		resourceLabel: "To-Dos",
 		emptyText: "No open To-Dos.",
 		renderRow: renderTodoRow,
+		getDescription: (item) => item.description,
 		resolveContext: resolveTodosContext,
 		fetch: queryTodosForBlock,
 		renderActions: renderTodoRowActions,

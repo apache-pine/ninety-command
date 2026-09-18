@@ -5,6 +5,22 @@ export interface ParamReferenceRow {
 	notes: string;
 }
 
+const DESCRIPTION_PARAM: ParamReferenceRow = {
+	param: "description",
+	accepts: "true / false",
+	default: "false",
+	notes:
+		"Shows each item's description under its title, keeping its formatting (bold, lists, links, etc.), truncated to Settings → Description line limit (3 by default). Independent of hover — the hover card still shows the full text.",
+};
+
+const HOVER_PARAM: ParamReferenceRow = {
+	param: "hover",
+	accepts: "true / false",
+	default: "Settings → Show description on hover (on by default)",
+	notes:
+		"Shows the item's full description in a card when the mouse rests on its row. Overrides the setting for this block in either direction. Independent of description.",
+};
+
 export const ISSUES_PARAM_REFERENCE: ParamReferenceRow[] = [
 	{
 		param: "id",
@@ -39,6 +55,8 @@ export const ISSUES_PARAM_REFERENCE: ParamReferenceRow[] = [
 		notes:
 			"Adds a header button for creating a new item, independent of interactive. If interactive already shows the add button, this has no additional effect.",
 	},
+	DESCRIPTION_PARAM,
+	HOVER_PARAM,
 	{ param: "interval", accepts: "short_term / long_term", default: "both", notes: "" },
 	{ param: "completed", accepts: "true / false / any", default: "false", notes: "Client-side filter — no server support" },
 	{ param: "archived", accepts: "true / false / any", default: "false", notes: "Client-side filter — no server support" },
@@ -116,6 +134,8 @@ export const TODOS_PARAM_REFERENCE: ParamReferenceRow[] = [
 		notes:
 			"Adds a header button for creating a new item, independent of interactive. If interactive already shows the add button, this has no additional effect.",
 	},
+	DESCRIPTION_PARAM,
+	HOVER_PARAM,
 	{ param: "completed", accepts: "true / false / any", default: "false", notes: "Server-side filter" },
 	{ param: "archived", accepts: "true / false / any", default: "false", notes: "Server-side filter" },
 	{
@@ -171,6 +191,8 @@ export const ROCKS_PARAM_REFERENCE: ParamReferenceRow[] = [
 		notes:
 			"Adds a header button for creating a new item, independent of interactive. If interactive already shows the add button, this has no additional effect.",
 	},
+	DESCRIPTION_PARAM,
+	HOVER_PARAM,
 	{
 		param: "status",
 		accepts: "off_track / on_track / done / canceled / draft",

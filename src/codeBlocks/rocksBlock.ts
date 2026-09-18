@@ -12,6 +12,7 @@ export function registerRocksCodeBlock(plugin: CommandPlugin): void {
 		resourceLabel: "Rocks",
 		emptyText: "No active Rocks.",
 		renderRow: renderRockRow,
+		getDescription: (item) => item.description,
 		resolveContext: resolveRocksContext,
 		fetch: queryRocksForBlock,
 		renderActions: renderRockRowActions,

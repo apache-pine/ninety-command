@@ -6,6 +6,7 @@ import {
 	TFile,
 } from "obsidian";
 import { describeApiError, CommandApiError } from "../api/errors";
+import { applyRowDescription } from "../descriptions";
 import type CommandPlugin from "../main";
 import type { QueryResult } from "../queries";
 import { resolveAddButtonDefaultAssignee } from "../userResolution";
@@ -22,6 +23,8 @@ export interface CommandBlockConfig<T, TContext extends BlockContext = BlockCont
 	resourceLabel: string;
 	emptyText: string;
 	renderRow: (item: T, rowEl: HTMLElement) => void;
+	/** The item's description (raw, possibly HTML), for the `description:` param and the hover card. */
+	getDescription: (item: T) => string | undefined;
 	/** Resolves whatever this resource needs (team id(s), personal-mode, etc.) from params. Throws BlockParamError on failure. */
 	resolveContext: (plugin: CommandPlugin, params: Record<string, string>) => Promise<TContext>;
 	fetch: (plugin: CommandPlugin, context: TContext, limit: number, params: Record<string, string>) => Promise<QueryResult<T>>;
@@ -169,9 +172,19 @@ class CommandBlockRenderChild<T, TContext extends BlockContext> extends Markdown
 
 			const interactive = parseTriStateBool(params.interactive, false) === true;
 
+			// `description:` and `hover:` are independent. An explicit `hover:` param wins over the
+			// global setting in either direction; `any`/`all` (parsed as undefined) fall back to it.
+			const { showDescriptionHover, descriptionLineLimit } = this.plugin.settings;
+			const descriptionOpts = {
+				inline: parseTriStateBool(params.description, false) === true,
+				hover: parseTriStateBool(params.hover, showDescriptionHover) ?? showDescriptionHover,
+				lineLimit: descriptionLineLimit,
+			};
+
 			for (const item of result.items) {
 				const rowEl = this.listEl.createDiv({ cls: "ninety-command-item" });
 				this.config.renderRow(item, rowEl);
+				applyRowDescription(rowEl, this.config.getDescription(item), descriptionOpts);
 				if (interactive && this.config.renderActions) {
 					const actionsEl = rowEl.createDiv({ cls: "ninety-command-item-actions" });
 					this.config.renderActions(this.plugin, item, actionsEl, () => void this.render());

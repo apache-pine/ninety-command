@@ -96,6 +96,109 @@
 	margin-top: 4px;
 }
 
+/* A rendered description (see utils/richDescription.ts): sanitized HTML rebuilt from
+   an allowlist of tags, shared by the inline description and the hover card. Block
+   margins are zeroed and line-height is a fixed unitless ratio so "N lines" below is
+   exact no matter how the description nests paragraphs and lists. */
+.ninety-command-rich {
+	line-height: 1.4;
+	overflow-wrap: anywhere;
+}
+
+/* Descriptions with no markup at all (e.g. To-Dos this plugin wrote) keep their own line breaks. */
+.ninety-command-rich.is-plain {
+	white-space: pre-wrap;
+}
+
+.ninety-command-rich :is(p, div, ul, ol, li, blockquote, pre, h1, h2, h3, h4, h5, h6) {
+	margin: 0;
+}
+
+.ninety-command-rich :is(h1, h2, h3, h4, h5, h6) {
+	font-size: inherit;
+	font-weight: var(--font-semibold);
+}
+
+.ninety-command-rich ul {
+	list-style: disc;
+	padding-inline-start: 1.5em;
+}
+
+.ninety-command-rich ol {
+	list-style: decimal;
+	padding-inline-start: 1.5em;
+}
+
+.ninety-command-rich blockquote {
+	padding-inline-start: 0.75em;
+	border-inline-start: 2px solid var(--background-modifier-border);
+}
+
+.ninety-command-rich :is(code, pre) {
+	font-family: var(--font-monospace);
+	font-size: 0.9em;
+	background-color: var(--code-background);
+	border-radius: var(--radius-s);
+}
+
+.ninety-command-rich code {
+	padding: 0 0.25em;
+}
+
+.ninety-command-rich pre {
+	padding: 0.25em 0.5em;
+	white-space: pre-wrap;
+}
+
+.ninety-command-rich pre code {
+	padding: 0;
+	background-color: transparent;
+}
+
+.ninety-command-rich a {
+	color: var(--link-color);
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+.ninety-command-item-description {
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+	margin-top: 2px;
+}
+
+/* Line limit comes from Settings → Description line limit, set per row as a custom property. */
+.ninety-command-item-description.is-clamped {
+	max-height: calc(var(--ninety-command-description-lines) * 1lh);
+	overflow: hidden;
+}
+
+/* Only added when text is actually cut off: fades the last line instead of chopping it mid-glyph. */
+.ninety-command-item-description.is-clamped.is-truncated {
+	-webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 1.4em), transparent);
+	mask-image: linear-gradient(to bottom, #000 calc(100% - 1.4em), transparent);
+}
+
+/* Hover card. Appended to <body> (not inside the block) so a block's maxheight
+   scrolling or Live Preview clipping can't cut it off, which also means it takes
+   its colours from the app's own theme variables rather than the block's overrides. */
+.ninety-command-description-card {
+	position: fixed;
+	z-index: var(--layer-popover);
+	max-width: min(400px, 90vw);
+	max-height: 60vh;
+	overflow: hidden;
+	padding: var(--size-4-2) var(--size-4-3);
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	box-shadow: var(--shadow-s);
+	font-size: var(--font-ui-small);
+	/* Display-only: never intercepts the mouse, so it can't cause its own row to lose hover. */
+	pointer-events: none;
+}
+
 .ninety-command-badge {
 	font-size: var(--font-ui-smaller);
 	font-weight: var(--font-semibold);
@@ -160,6 +263,7 @@ body {
 .theme-dark .ninety-command-codeblock .ninety-command-panel-empty,
 .theme-dark .ninety-command-codeblock .ninety-command-modal-loading,
 .theme-dark .ninety-command-codeblock .ninety-command-codeblock-count,
+.theme-dark .ninety-command-codeblock .ninety-command-item-description,
 .theme-dark .ninety-command-codeblock .ninety-command-badge.is-draft {
 	color: #a8a8a8;
 }
@@ -169,6 +273,7 @@ body {
 .theme-light .ninety-command-codeblock .ninety-command-panel-empty,
 .theme-light .ninety-command-codeblock .ninety-command-modal-loading,
 .theme-light .ninety-command-codeblock .ninety-command-codeblock-count,
+.theme-light .ninety-command-codeblock .ninety-command-item-description,
 .theme-light .ninety-command-codeblock .ninety-command-badge.is-draft {
 	color: #595959;
 }

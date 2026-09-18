@@ -27,6 +27,10 @@ export interface CommandSettings {
 	confirmOnDelete: boolean;
 	/** Shows a header "add item" button on `interactive: true` code blocks. On by default. Doesn't affect the standalone `addbutton:` param, which always shows the button regardless of this setting. */
 	showAddButtonInInteractive: boolean;
+	/** Shows an item's full description in a floating card when the mouse rests on its row (code blocks and sidebar). On by default. A code block's `hover:` param overrides this either way. */
+	showDescriptionHover: boolean;
+	/** Max lines of an inline description (`description: true` in a code block) before it's truncated; 0 shows it all. The hover card always shows the full text. */
+	descriptionLineLimit: number;
 	/** Pre-fills the create modal's Assignee field from the code block's assignee/owner param when the add button is used. On by default. Doesn't apply to Rocks — the API always sets a new Rock's owner to the creator, so its create modal has no Assignee field to prefill. */
 	prefillAssigneeOnAdd: boolean;
 	/** Opens create/edit forms as movable, independent pop-out windows instead of blocking modals. Desktop only — always falls back to a modal on mobile, regardless of this setting. On by default. */
@@ -48,6 +52,8 @@ export const DEFAULT_SETTINGS: CommandSettings = {
 	confirmOnComplete: false,
 	confirmOnDelete: true,
 	showAddButtonInInteractive: true,
+	showDescriptionHover: true,
+	descriptionLineLimit: 3,
 	prefillAssigneeOnAdd: true,
 	openFormsAsPopout: true,
 };

@@ -1,4 +1,5 @@
 import { describeApiError, CommandApiError } from "../api/errors";
+import { applyRowDescription } from "../descriptions";
 
 export interface SectionFetchResult<T> {
 	items: T[];
@@ -13,6 +14,10 @@ export interface CommandSectionOptions<T> {
 	onAddClick: () => void;
 	fetchFn: () => Promise<SectionFetchResult<T>>;
 	renderItem: (item: T, rowEl: HTMLElement) => void;
+	/** The item's description (raw, possibly HTML), shown in a hover card when `isHoverEnabled()` is true. */
+	getDescription?: (item: T) => string | undefined;
+	/** Read on every render so a settings change applies on the next refresh. */
+	isHoverEnabled?: () => boolean;
 	/** Appended after renderItem into a dedicated actions row. Omitted → no buttons rendered. */
 	renderActions?: (item: T, actionsEl: HTMLElement) => void;
 	emptyText: string;
@@ -54,9 +59,15 @@ export class CommandSection<T> {
 				return;
 			}
 
+			const hover = this.opts.isHoverEnabled?.() ?? false;
+
 			for (const item of result.items) {
 				const rowEl = this.listEl.createDiv({ cls: "ninety-command-item" });
 				this.opts.renderItem(item, rowEl);
+				if (hover) {
+					// Hover only — the sidebar has no per-block params, so no inline description here.
+					applyRowDescription(rowEl, this.opts.getDescription?.(item), { inline: false, hover: true, lineLimit: 0 });
+				}
 				if (this.opts.renderActions) {
 					const actionsEl = rowEl.createDiv({ cls: "ninety-command-item-actions" });
 					this.opts.renderActions(item, actionsEl);

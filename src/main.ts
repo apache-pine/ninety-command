@@ -8,6 +8,7 @@ import { registerTodosCodeBlock } from "./codeBlocks/todosBlock";
 import { RockPickerModal } from "./modals/RockPickerModal";
 import { CommandSettingTab } from "./settings";
 import { DEFAULT_SETTINGS, type CommandSettings } from "./types/settings";
+import { hideDescriptionCard } from "./utils/descriptionHover";
 import { getPrefillFromSelection } from "./utils/prefill";
 import { COMMAND_VIEW_TYPE, CommandSidebarView } from "./views/CommandSidebarView";
 import { ISSUE_FORM_VIEW_TYPE, IssueFormView, openIssueForm } from "./views/IssueFormView";
@@ -52,6 +53,7 @@ export default class CommandPlugin extends Plugin {
 	}
 
 	onunload(): void {
+		hideDescriptionCard();
 		this.app.workspace.detachLeavesOfType(COMMAND_VIEW_TYPE);
 		this.app.workspace.detachLeavesOfType(TODO_FORM_VIEW_TYPE);
 		this.app.workspace.detachLeavesOfType(ISSUE_FORM_VIEW_TYPE);

@@ -43,6 +43,8 @@ export class CommandSettingTab extends PluginSettingTab {
 		this.renderAutoRefreshSetting(containerEl);
 		this.renderDefaultLimitSetting(containerEl);
 		this.renderShowCountsSetting(containerEl);
+		this.renderDescriptionHoverSetting(containerEl);
+		this.renderDescriptionLineLimitSetting(containerEl);
 		this.renderShowAddButtonSetting(containerEl);
 		this.renderPrefillAssigneeSetting(containerEl);
 		this.renderOpenFormsAsPopoutSetting(containerEl);
@@ -292,6 +294,41 @@ export class CommandSettingTab extends PluginSettingTab {
 				toggle.setValue(this.plugin.settings.showCodeBlockCounts).onChange(async (value) => {
 					this.plugin.settings.showCodeBlockCounts = value;
 					await this.plugin.saveSettings();
+				});
+			});
+	}
+
+	private renderDescriptionHoverSetting(containerEl: HTMLElement): void {
+		new Setting(containerEl)
+			.setName("Show description on hover")
+			.setDesc(
+				"Shows an item's full description in a card when you rest the mouse on its row, in code blocks and the sidebar panel. " +
+					"A code block's hover: param overrides this for that block, whether it's on or off here. Desktop only.",
+			)
+			.addToggle((toggle) => {
+				toggle.setValue(this.plugin.settings.showDescriptionHover).onChange(async (value) => {
+					this.plugin.settings.showDescriptionHover = value;
+					await this.plugin.saveSettings();
+				});
+			});
+	}
+
+	private renderDescriptionLineLimitSetting(containerEl: HTMLElement): void {
+		new Setting(containerEl)
+			.setName("Description line limit")
+			.setDesc(
+				"How many lines of an item's description a code block shows before truncating, for blocks that set description: true. " +
+					"0 shows the whole description. The hover card always shows the full text.",
+			)
+			.addText((text) => {
+				text.inputEl.type = "number";
+				text.inputEl.min = "0";
+				text.setValue(String(this.plugin.settings.descriptionLineLimit)).onChange(async (value) => {
+					const n = Number(value);
+					if (value.trim() !== "" && Number.isFinite(n) && n >= 0) {
+						this.plugin.settings.descriptionLineLimit = Math.floor(n);
+						await this.plugin.saveSettings();
+					}
 				});
 			});
 	}

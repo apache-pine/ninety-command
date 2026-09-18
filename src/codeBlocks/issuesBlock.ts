@@ -12,6 +12,7 @@ export function registerIssuesCodeBlock(plugin: CommandPlugin): void {
 		resourceLabel: "Issues",
 		emptyText: "No open Issues.",
 		renderRow: renderIssueRow,
+		getDescription: (item) => item.description,
 		resolveContext: resolveIssuesContext,
 		fetch: queryIssuesForBlock,
 		renderActions: renderIssueRowActions,

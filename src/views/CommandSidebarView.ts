@@ -99,6 +99,8 @@ export class CommandSidebarView extends ItemView {
 					),
 				),
 			renderItem: renderIssueRow,
+			getDescription: (item) => item.description,
+			isHoverEnabled: () => this.plugin.settings.showDescriptionHover,
 			renderActions: (issue, actionsEl) =>
 				renderIssueRowActions(this.plugin, issue, actionsEl, () => void this.issuesSection.refresh()),
 			emptyText: "No open Issues.",
@@ -119,6 +121,8 @@ export class CommandSidebarView extends ItemView {
 					),
 				),
 			renderItem: renderTodoRow,
+			getDescription: (item) => item.description,
+			isHoverEnabled: () => this.plugin.settings.showDescriptionHover,
 			renderActions: (todo, actionsEl) =>
 				renderTodoRowActions(this.plugin, todo, actionsEl, () => void this.todosSection.refresh()),
 			emptyText: "No open To-Dos.",
@@ -139,6 +143,8 @@ export class CommandSidebarView extends ItemView {
 					),
 				),
 			renderItem: renderRockRow,
+			getDescription: (item) => item.description,
+			isHoverEnabled: () => this.plugin.settings.showDescriptionHover,
 			renderActions: (rock, actionsEl) =>
 				renderRockRowActions(this.plugin, rock, actionsEl, () => void this.rocksSection.refresh()),
 			emptyText: "No active Rocks.",
